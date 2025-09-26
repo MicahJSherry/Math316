@@ -1,0 +1,18 @@
+---
+title: "Pittsburgh Weather – Phase 1 Exploration"
+format: revealjs
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Introduction
+
+- Dataset: **Pittsburgh Hourly Normals (1981–2010)**
+- Source: NOAA Climate Normals  
+- Goal: Explore seasonal and hourly weather patterns  
+- Phase 1 Focus: Initial exploration and key questions  
+
+---
+
