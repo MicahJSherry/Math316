@@ -1,0 +1,80 @@
+---
+title: "Pittsburgh Weather - Travis, Micah, Ira"
+format: revealjs
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Dataset Overview
+
+```{python}
+import pandas as pd
+import altair as alt
+
+# Load dataset
+df = pd.read_csv("Pittsburgh_hourly_normals_1981_2010.csv")
+df["DATE"] = pd.to_datetime("2000-" + df["DATE"].astype(str), errors="coerce")
+df["Month"] = df["DATE"].dt.month
+df["Hour"] = df["DATE"].dt.hour
+
+# Drop all *_ATTRIBUTES columns
+df_clean = df.loc[:, ~df.columns.str.contains("_ATTRIBUTES")]
+
+# Rename key variables
+rename_map = {
+    "HLY-CLOD-PCTCLR": "Cloud",
+    "HLY-DEWP-NORMAL": "DewPoint",
+    "HLY-PRES-NORMAL": "Pressure",
+    "HLY-TEMP-NORMAL": "Temperature",
+    "HLY-WIND-VCTSPD": "Wind"
+}
+df_clean = df_clean.rename(columns=rename_map)
+
+rows, cols = df_clean.shape
+print(f"Dataset contains {rows:,} rows and {cols} columns (after dropping attributes)")
+
+print("\nKey column categories:")
+print("- Station info: STATION, DATE, LATITUDE, LONGITUDE, ELEVATION, NAME")
+print("- Weather variables: Cloud, DewPoint, Pressure, Temperature, Wind")
+```
+
+---
+
+## Cloud Cover – Monthly Trends
+
+```{python}
+cloud_columns = {
+    "HLY-CLOD-PCTCLR": "Clear",
+    "HLY-CLOD-PCTFEW": "Few",
+    "HLY-CLOD-PCTSCT": "Scattered",
+    "HLY-CLOD-PCTBKN": "Broken",
+    "HLY-CLOD-PCTOVC": "Overcast"
+}
+df = df.rename(columns=cloud_columns)
+
+cloud_monthly = df.groupby("Month")[list(cloud_columns.values())].mean().reset_index()
+
+cloud_long = cloud_monthly.melt("Month", var_name="Condition", value_name="Percent")
+
+chart = alt.Chart(cloud_long).mark_line(point=True).encode(
+    x="Month:O",
+    y="Percent:Q",
+    color="Condition:N"
+).properties(
+    title="Average Cloud Cover by Month (1981–2010)",
+    width=700,
+    height=500
+)
+
+chart
+```
+
+---
+
+## Key Questions for Dashboard
+
+- **How do all three relate (Wind, Temperature, Clouds)?**  
+- **How does Pressure and DewPoint affect the other 3?**  
+- **Are there any intersting seasonal patterns?**  
