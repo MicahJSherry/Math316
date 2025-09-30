@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="Weather_project_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Weather_project_files/libs/quarto-html/tabby.min.js"></script>
+<script src="Weather_project_files/libs/quarto-html/popper.min.js"></script>
+<script src="Weather_project_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="Weather_project_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Weather_project_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="Weather_project_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.8.25">
+
+  <title>Pittsburgh Weather - Travis, Micah, Ira</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="Weather_project_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="Weather_project_files/libs/revealjs/dist/reveal.css">
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="Weather_project_files/libs/revealjs/dist/theme/quarto-534cd8e3a96973385dffff3f4709048d.css">
+  <link href="Weather_project_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="Weather_project_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="Weather_project_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="Weather_project_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+  
+  <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">Pittsburgh Weather - Travis, Micah, Ira</h1>
+
+<div class="quarto-title-authors">
+</div>
+
+</section>
+<section id="dataset-overview" class="slide level2">
+<h2>Dataset Overview</h2>
+<div id="105746d2" class="cell" data-execution_count="1">
+<div class="cell-output cell-output-stdout">
+<pre><code>Dataset contains 8,760 rows and 36 columns (after dropping attributes)
+
+Key column categories:
+- Station info: STATION, DATE, LATITUDE, LONGITUDE, ELEVATION, NAME
+- Weather variables: Cloud, DewPoint, Pressure, Temperature, Wind</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div id="uawqopbked" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#uawqopbked table {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#uawqopbked thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#uawqopbked p { margin: 0; padding: 0; }
+ #uawqopbked .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 16px; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: 700px; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #uawqopbked .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #uawqopbked .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #uawqopbked .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #uawqopbked .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #uawqopbked .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #uawqopbked .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #uawqopbked .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: normal; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; overflow-x: hidden; }
+ #uawqopbked .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: normal; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #uawqopbked .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #uawqopbked .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #uawqopbked .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #uawqopbked .gt_spanner_row { border-bottom-style: hidden; }
+ #uawqopbked .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #uawqopbked .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #uawqopbked .gt_from_md> :first-child { margin-top: 0; }
+ #uawqopbked .gt_from_md> :last-child { margin-bottom: 0; }
+ #uawqopbked .gt_row { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #uawqopbked .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; }
+ #uawqopbked .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #uawqopbked .gt_row_group_first td { border-top-width: 2px; }
+ #uawqopbked .gt_row_group_first th { border-top-width: 2px; }
+ #uawqopbked .gt_striped { background-color: rgba(128,128,128,0.05); }
+ #uawqopbked .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #uawqopbked .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #uawqopbked .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #uawqopbked .gt_left { text-align: left; }
+ #uawqopbked .gt_center { text-align: center; }
+ #uawqopbked .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #uawqopbked .gt_font_normal { font-weight: normal; }
+ #uawqopbked .gt_font_bold { font-weight: bold; }
+ #uawqopbked .gt_font_italic { font-style: italic; }
+ #uawqopbked .gt_super { font-size: 65%; }
+ #uawqopbked .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #uawqopbked .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
+</style>
+
+<table class="gt_table caption-top" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<td colspan="6" class="gt_heading gt_title gt_font_normal">Average Weather summary Over (1985-2025)</td>
+</tr>
+<tr class="gt_col_headings even">
+<th class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"></th>
+<th id="Cloud" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Cloud</th>
+<th id="DewPoint" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">DewPoint</th>
+<th id="Pressure" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Pressure</th>
+<th id="Temperature" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Temperature</th>
+<th id="Wind" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Wind</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<th class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th">count</th>
+<td class="gt_row gt_right">8760.0</td>
+<td class="gt_row gt_right">8760.0</td>
+<td class="gt_row gt_right">8760.0</td>
+<td class="gt_row gt_right">8760.0</td>
+<td class="gt_row gt_right">8760.0</td>
+</tr>
+<tr class="even">
+<th class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th">mean</th>
+<td class="gt_row gt_right">131.18</td>
+<td class="gt_row gt_right">405.67</td>
+<td class="gt_row gt_right">10177.4</td>
+<td class="gt_row gt_right">515.72</td>
+<td class="gt_row gt_right">30.79</td>
+</tr>
+<tr class="odd">
+<th class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th">std</th>
+<td class="gt_row gt_right">87.7</td>
+<td class="gt_row gt_right">149.12</td>
+<td class="gt_row gt_right">16.62</td>
+<td class="gt_row gt_right">163.94</td>
+<td class="gt_row gt_right">16.91</td>
+</tr>
+<tr class="even">
+<th class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th">min</th>
+<td class="gt_row gt_right">7.0</td>
+<td class="gt_row gt_right">176.0</td>
+<td class="gt_row gt_right">10141.0</td>
+<td class="gt_row gt_right">238.0</td>
+<td class="gt_row gt_right">0.0</td>
+</tr>
+<tr class="odd">
+<th class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th">25%</th>
+<td class="gt_row gt_right">63.0</td>
+<td class="gt_row gt_right">259.0</td>
+<td class="gt_row gt_right">10163.0</td>
+<td class="gt_row gt_right">361.0</td>
+<td class="gt_row gt_right">15.0</td>
+</tr>
+<tr class="even">
+<th class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th">50%</th>
+<td class="gt_row gt_right">108.0</td>
+<td class="gt_row gt_right">390.0</td>
+<td class="gt_row gt_right">10180.0</td>
+<td class="gt_row gt_right">517.5</td>
+<td class="gt_row gt_right">31.0</td>
+</tr>
+<tr class="odd">
+<th class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th">75%</th>
+<td class="gt_row gt_right">183.0</td>
+<td class="gt_row gt_right">564.0</td>
+<td class="gt_row gt_right">10191.0</td>
+<td class="gt_row gt_right">655.0</td>
+<td class="gt_row gt_right">43.0</td>
+</tr>
+<tr class="even">
+<th class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th">max</th>
+<td class="gt_row gt_right">414.0</td>
+<td class="gt_row gt_right">634.0</td>
+<td class="gt_row gt_right">10215.0</td>
+<td class="gt_row gt_right">812.0</td>
+<td class="gt_row gt_right">72.0</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</div>
+</section>
+<section id="cloud-cover-monthly-trends" class="slide level2">
+<h2>Cloud Cover – Monthly Trends</h2>
+<div id="43cfc1e7" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display" data-execution_count="2">
+
+<style>
+  #altair-viz-f76601d5697a4fffa1d9e4327c2a48b2.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-f76601d5697a4fffa1d9e4327c2a48b2.vega-embed details,
+  #altair-viz-f76601d5697a4fffa1d9e4327c2a48b2.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-f76601d5697a4fffa1d9e4327c2a48b2"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-f76601d5697a4fffa1d9e4327c2a48b2") {
+      outputDiv = document.getElementById("altair-viz-f76601d5697a4fffa1d9e4327c2a48b2");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@5.20.1?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "5.20.1"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-1352eec4f4047ca6c470597b8e1466fb"}, "mark": {"type": "line", "point": true}, "encoding": {"color": {"field": "Condition", "type": "nominal"}, "x": {"field": "Month", "type": "ordinal"}, "y": {"field": "Percent", "type": "quantitative"}}, "height": 500, "title": "Average Cloud Cover by Month (1981\u20132010)", "width": 700, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-1352eec4f4047ca6c470597b8e1466fb": [{"Month": 1, "Condition": "Clear", "Percent": 86.01747311827957}, {"Month": 2, "Condition": "Clear", "Percent": 100.34970238095238}, {"Month": 3, "Condition": "Clear", "Percent": 134.74193548387098}, {"Month": 4, "Condition": "Clear", "Percent": 144.03194444444443}, {"Month": 5, "Condition": "Clear", "Percent": 128.44489247311827}, {"Month": 6, "Condition": "Clear", "Percent": 115.65833333333333}, {"Month": 7, "Condition": "Clear", "Percent": 128.6438172043011}, {"Month": 8, "Condition": "Clear", "Percent": 154.11559139784947}, {"Month": 9, "Condition": "Clear", "Percent": 191.82777777777778}, {"Month": 10, "Condition": "Clear", "Percent": 182.31989247311827}, {"Month": 11, "Condition": "Clear", "Percent": 123.8625}, {"Month": 12, "Condition": "Clear", "Percent": 82.74596774193549}, {"Month": 1, "Condition": "Few", "Percent": 74.53629032258064}, {"Month": 2, "Condition": "Few", "Percent": 82.33035714285714}, {"Month": 3, "Condition": "Few", "Percent": 101.29032258064517}, {"Month": 4, "Condition": "Few", "Percent": 119.30416666666666}, {"Month": 5, "Condition": "Few", "Percent": 126.18145161290323}, {"Month": 6, "Condition": "Few", "Percent": 151.8736111111111}, {"Month": 7, "Condition": "Few", "Percent": 165.7755376344086}, {"Month": 8, "Condition": "Few", "Percent": 169.66532258064515}, {"Month": 9, "Condition": "Few", "Percent": 158.1513888888889}, {"Month": 10, "Condition": "Few", "Percent": 138.66397849462365}, {"Month": 11, "Condition": "Few", "Percent": 103.50972222222222}, {"Month": 12, "Condition": "Few", "Percent": 78.48252688172043}, {"Month": 1, "Condition": "Scattered", "Percent": 59.25403225806452}, {"Month": 2, "Condition": "Scattered", "Percent": 64.61607142857143}, {"Month": 3, "Condition": "Scattered", "Percent": 73.8239247311828}, {"Month": 4, "Condition": "Scattered", "Percent": 85.40694444444445}, {"Month": 5, "Condition": "Scattered", "Percent": 110.00806451612904}, {"Month": 6, "Condition": "Scattered", "Percent": 150.00277777777777}, {"Month": 7, "Condition": "Scattered", "Percent": 166.5}, {"Month": 8, "Condition": "Scattered", "Percent": 153.33467741935485}, {"Month": 9, "Condition": "Scattered", "Percent": 119.45416666666667}, {"Month": 10, "Condition": "Scattered", "Percent": 98.35483870967742}, {"Month": 11, "Condition": "Scattered", "Percent": 78.85972222222222}, {"Month": 12, "Condition": "Scattered", "Percent": 59.428763440860216}, {"Month": 1, "Condition": "Broken", "Percent": 138.2513440860215}, {"Month": 2, "Condition": "Broken", "Percent": 156.625}, {"Month": 3, "Condition": "Broken", "Percent": 163.4005376344086}, {"Month": 4, "Condition": "Broken", "Percent": 191.59027777777777}, {"Month": 5, "Condition": "Broken", "Percent": 217.67741935483872}, {"Month": 6, "Condition": "Broken", "Percent": 249.9361111111111}, {"Month": 7, "Condition": "Broken", "Percent": 259.5833333333333}, {"Month": 8, "Condition": "Broken", "Percent": 233.11424731182797}, {"Month": 9, "Condition": "Broken", "Percent": 211.70694444444445}, {"Month": 10, "Condition": "Broken", "Percent": 188.01478494623655}, {"Month": 11, "Condition": "Broken", "Percent": 169.84027777777777}, {"Month": 12, "Condition": "Broken", "Percent": 143.11693548387098}, {"Month": 1, "Condition": "Overcast", "Percent": 641.9018817204301}, {"Month": 2, "Condition": "Overcast", "Percent": 596.0803571428571}, {"Month": 3, "Condition": "Overcast", "Percent": 526.7594086021505}, {"Month": 4, "Condition": "Overcast", "Percent": 459.65833333333336}, {"Month": 5, "Condition": "Overcast", "Percent": 417.68145161290323}, {"Month": 6, "Condition": "Overcast", "Percent": 332.51666666666665}, {"Month": 7, "Condition": "Overcast", "Percent": 279.491935483871}, {"Month": 8, "Condition": "Overcast", "Percent": 289.7741935483871}, {"Month": 9, "Condition": "Overcast", "Percent": 318.8263888888889}, {"Month": 10, "Condition": "Overcast", "Percent": 392.5940860215054}, {"Month": 11, "Condition": "Overcast", "Percent": 523.9347222222223}, {"Month": 12, "Condition": "Overcast", "Percent": 636.2029569892474}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+</div>
+</section>
+<section id="average-temperature-daily-trends" class="slide level2">
+<h2>Average Temperature – daily Trends</h2>
+<div id="915af307" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display" data-execution_count="3">
+
+<style>
+  #altair-viz-8d5dda471c8e42cf805ea683222442f0.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-8d5dda471c8e42cf805ea683222442f0.vega-embed details,
+  #altair-viz-8d5dda471c8e42cf805ea683222442f0.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-8d5dda471c8e42cf805ea683222442f0"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-8d5dda471c8e42cf805ea683222442f0") {
+      outputDiv = document.getElementById("altair-viz-8d5dda471c8e42cf805ea683222442f0");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@5.20.1?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "5.20.1"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-c87ff58684a54e3227e4ce2b49c10d8f"}, "mark": {"type": "line"}, "encoding": {"color": {"field": "temp_type", "type": "nominal"}, "x": {"field": "DayOfYear", "title": "Day", "type": "quantitative"}, "y": {"field": "temp", "title": "Average Temperature (F\u00b0)", "type": "quantitative"}}, "height": 500, "title": "Average Temperature by Day (1981\u20132010)", "width": 700, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-c87ff58684a54e3227e4ce2b49c10d8f": [{"DayOfYear": 1, "temp_type": "min_temp", "temp": 28.0}, {"DayOfYear": 2, "temp_type": "min_temp", "temp": 28.1}, {"DayOfYear": 3, "temp_type": "min_temp", "temp": 28.2}, {"DayOfYear": 4, "temp_type": "min_temp", "temp": 28.1}, {"DayOfYear": 5, "temp_type": "min_temp", "temp": 27.9}, {"DayOfYear": 6, "temp_type": "min_temp", "temp": 27.9}, {"DayOfYear": 7, "temp_type": "min_temp", "temp": 27.8}, {"DayOfYear": 8, "temp_type": "min_temp", "temp": 27.4}, {"DayOfYear": 9, "temp_type": "min_temp", "temp": 27.0}, {"DayOfYear": 10, "temp_type": "min_temp", "temp": 26.7}, {"DayOfYear": 11, "temp_type": "min_temp", "temp": 26.3}, {"DayOfYear": 12, "temp_type": "min_temp", "temp": 25.8}, {"DayOfYear": 13, "temp_type": "min_temp", "temp": 25.5}, {"DayOfYear": 14, "temp_type": "min_temp", "temp": 24.9}, {"DayOfYear": 15, "temp_type": "min_temp", "temp": 24.6}, {"DayOfYear": 16, "temp_type": "min_temp", "temp": 24.7}, {"DayOfYear": 17, "temp_type": "min_temp", "temp": 24.7}, {"DayOfYear": 18, "temp_type": "min_temp", "temp": 24.6}, {"DayOfYear": 19, "temp_type": "min_temp", "temp": 24.6}, {"DayOfYear": 20, "temp_type": "min_temp", "temp": 24.2}, {"DayOfYear": 21, "temp_type": "min_temp", "temp": 23.8}, {"DayOfYear": 22, "temp_type": "min_temp", "temp": 23.8}, {"DayOfYear": 23, "temp_type": "min_temp", "temp": 24.1}, {"DayOfYear": 24, "temp_type": "min_temp", "temp": 24.0}, {"DayOfYear": 25, "temp_type": "min_temp", "temp": 24.2}, {"DayOfYear": 26, "temp_type": "min_temp", "temp": 24.4}, {"DayOfYear": 27, "temp_type": "min_temp", "temp": 24.7}, {"DayOfYear": 28, "temp_type": "min_temp", "temp": 24.9}, {"DayOfYear": 29, "temp_type": "min_temp", "temp": 25.1}, {"DayOfYear": 30, "temp_type": "min_temp", "temp": 25.1}, {"DayOfYear": 31, "temp_type": "min_temp", "temp": 25.0}, {"DayOfYear": 32, "temp_type": "min_temp", "temp": 24.7}, {"DayOfYear": 33, "temp_type": "min_temp", "temp": 24.7}, {"DayOfYear": 34, "temp_type": "min_temp", "temp": 24.9}, {"DayOfYear": 35, "temp_type": "min_temp", "temp": 25.1}, {"DayOfYear": 36, "temp_type": "min_temp", "temp": 25.0}, {"DayOfYear": 37, "temp_type": "min_temp", "temp": 24.8}, {"DayOfYear": 38, "temp_type": "min_temp", "temp": 24.7}, {"DayOfYear": 39, "temp_type": "min_temp", "temp": 25.1}, {"DayOfYear": 40, "temp_type": "min_temp", "temp": 25.1}, {"DayOfYear": 41, "temp_type": "min_temp", "temp": 25.1}, {"DayOfYear": 42, "temp_type": "min_temp", "temp": 25.2}, {"DayOfYear": 43, "temp_type": "min_temp", "temp": 25.5}, {"DayOfYear": 44, "temp_type": "min_temp", "temp": 26.0}, {"DayOfYear": 45, "temp_type": "min_temp", "temp": 26.5}, {"DayOfYear": 46, "temp_type": "min_temp", "temp": 27.1}, {"DayOfYear": 47, "temp_type": "min_temp", "temp": 27.6}, {"DayOfYear": 48, "temp_type": "min_temp", "temp": 27.8}, {"DayOfYear": 49, "temp_type": "min_temp", "temp": 28.0}, {"DayOfYear": 50, "temp_type": "min_temp", "temp": 28.1}, {"DayOfYear": 51, "temp_type": "min_temp", "temp": 28.5}, {"DayOfYear": 52, "temp_type": "min_temp", "temp": 28.8}, {"DayOfYear": 53, "temp_type": "min_temp", "temp": 28.9}, {"DayOfYear": 54, "temp_type": "min_temp", "temp": 29.2}, {"DayOfYear": 55, "temp_type": "min_temp", "temp": 29.2}, {"DayOfYear": 56, "temp_type": "min_temp", "temp": 29.3}, {"DayOfYear": 57, "temp_type": "min_temp", "temp": 29.3}, {"DayOfYear": 58, "temp_type": "min_temp", "temp": 29.5}, {"DayOfYear": 59, "temp_type": "min_temp", "temp": 29.5}, {"DayOfYear": 61, "temp_type": "min_temp", "temp": 29.5}, {"DayOfYear": 62, "temp_type": "min_temp", "temp": 29.4}, {"DayOfYear": 63, "temp_type": "min_temp", "temp": 29.3}, {"DayOfYear": 64, "temp_type": "min_temp", "temp": 29.5}, {"DayOfYear": 65, "temp_type": "min_temp", "temp": 29.8}, {"DayOfYear": 66, "temp_type": "min_temp", "temp": 30.1}, {"DayOfYear": 67, "temp_type": "min_temp", "temp": 30.5}, {"DayOfYear": 68, "temp_type": "min_temp", "temp": 31.1}, {"DayOfYear": 69, "temp_type": "min_temp", "temp": 31.3}, {"DayOfYear": 70, "temp_type": "min_temp", "temp": 31.3}, {"DayOfYear": 71, "temp_type": "min_temp", "temp": 31.7}, {"DayOfYear": 72, "temp_type": "min_temp", "temp": 32.1}, {"DayOfYear": 73, "temp_type": "min_temp", "temp": 32.2}, {"DayOfYear": 74, "temp_type": "min_temp", "temp": 32.3}, {"DayOfYear": 75, "temp_type": "min_temp", "temp": 32.5}, {"DayOfYear": 76, "temp_type": "min_temp", "temp": 32.7}, {"DayOfYear": 77, "temp_type": "min_temp", "temp": 32.8}, {"DayOfYear": 78, "temp_type": "min_temp", "temp": 33.3}, {"DayOfYear": 79, "temp_type": "min_temp", "temp": 33.8}, {"DayOfYear": 80, "temp_type": "min_temp", "temp": 34.3}, {"DayOfYear": 81, "temp_type": "min_temp", "temp": 34.7}, {"DayOfYear": 82, "temp_type": "min_temp", "temp": 35.2}, {"DayOfYear": 83, "temp_type": "min_temp", "temp": 35.6}, {"DayOfYear": 84, "temp_type": "min_temp", "temp": 35.9}, {"DayOfYear": 85, "temp_type": "min_temp", "temp": 36.5}, {"DayOfYear": 86, "temp_type": "min_temp", "temp": 37.0}, {"DayOfYear": 87, "temp_type": "min_temp", "temp": 37.5}, {"DayOfYear": 88, "temp_type": "min_temp", "temp": 38.0}, {"DayOfYear": 89, "temp_type": "min_temp", "temp": 38.4}, {"DayOfYear": 90, "temp_type": "min_temp", "temp": 39.0}, {"DayOfYear": 91, "temp_type": "min_temp", "temp": 39.5}, {"DayOfYear": 92, "temp_type": "min_temp", "temp": 39.9}, {"DayOfYear": 93, "temp_type": "min_temp", "temp": 40.2}, {"DayOfYear": 94, "temp_type": "min_temp", "temp": 40.3}, {"DayOfYear": 95, "temp_type": "min_temp", "temp": 40.5}, {"DayOfYear": 96, "temp_type": "min_temp", "temp": 40.6}, {"DayOfYear": 97, "temp_type": "min_temp", "temp": 40.6}, {"DayOfYear": 98, "temp_type": "min_temp", "temp": 40.7}, {"DayOfYear": 99, "temp_type": "min_temp", "temp": 41.1}, {"DayOfYear": 100, "temp_type": "min_temp", "temp": 41.2}, {"DayOfYear": 101, "temp_type": "min_temp", "temp": 41.5}, {"DayOfYear": 102, "temp_type": "min_temp", "temp": 41.5}, {"DayOfYear": 103, "temp_type": "min_temp", "temp": 41.7}, {"DayOfYear": 104, "temp_type": "min_temp", "temp": 42.2}, {"DayOfYear": 105, "temp_type": "min_temp", "temp": 42.6}, {"DayOfYear": 106, "temp_type": "min_temp", "temp": 42.9}, {"DayOfYear": 107, "temp_type": "min_temp", "temp": 43.2}, {"DayOfYear": 108, "temp_type": "min_temp", "temp": 43.4}, {"DayOfYear": 109, "temp_type": "min_temp", "temp": 43.9}, {"DayOfYear": 110, "temp_type": "min_temp", "temp": 44.3}, {"DayOfYear": 111, "temp_type": "min_temp", "temp": 44.6}, {"DayOfYear": 112, "temp_type": "min_temp", "temp": 44.9}, {"DayOfYear": 113, "temp_type": "min_temp", "temp": 45.2}, {"DayOfYear": 114, "temp_type": "min_temp", "temp": 45.5}, {"DayOfYear": 115, "temp_type": "min_temp", "temp": 45.9}, {"DayOfYear": 116, "temp_type": "min_temp", "temp": 46.3}, {"DayOfYear": 117, "temp_type": "min_temp", "temp": 46.7}, {"DayOfYear": 118, "temp_type": "min_temp", "temp": 46.7}, {"DayOfYear": 119, "temp_type": "min_temp", "temp": 46.9}, {"DayOfYear": 120, "temp_type": "min_temp", "temp": 47.1}, {"DayOfYear": 121, "temp_type": "min_temp", "temp": 47.3}, {"DayOfYear": 122, "temp_type": "min_temp", "temp": 47.7}, {"DayOfYear": 123, "temp_type": "min_temp", "temp": 48.2}, {"DayOfYear": 124, "temp_type": "min_temp", "temp": 48.6}, {"DayOfYear": 125, "temp_type": "min_temp", "temp": 49.0}, {"DayOfYear": 126, "temp_type": "min_temp", "temp": 49.4}, {"DayOfYear": 127, "temp_type": "min_temp", "temp": 49.7}, {"DayOfYear": 128, "temp_type": "min_temp", "temp": 50.0}, {"DayOfYear": 129, "temp_type": "min_temp", "temp": 50.2}, {"DayOfYear": 130, "temp_type": "min_temp", "temp": 50.4}, {"DayOfYear": 131, "temp_type": "min_temp", "temp": 50.5}, {"DayOfYear": 132, "temp_type": "min_temp", "temp": 50.9}, {"DayOfYear": 133, "temp_type": "min_temp", "temp": 51.4}, {"DayOfYear": 134, "temp_type": "min_temp", "temp": 51.6}, {"DayOfYear": 135, "temp_type": "min_temp", "temp": 51.7}, {"DayOfYear": 136, "temp_type": "min_temp", "temp": 51.9}, {"DayOfYear": 137, "temp_type": "min_temp", "temp": 52.1}, {"DayOfYear": 138, "temp_type": "min_temp", "temp": 52.3}, {"DayOfYear": 139, "temp_type": "min_temp", "temp": 52.5}, {"DayOfYear": 140, "temp_type": "min_temp", "temp": 52.8}, {"DayOfYear": 141, "temp_type": "min_temp", "temp": 53.0}, {"DayOfYear": 142, "temp_type": "min_temp", "temp": 53.3}, {"DayOfYear": 143, "temp_type": "min_temp", "temp": 53.7}, {"DayOfYear": 144, "temp_type": "min_temp", "temp": 53.9}, {"DayOfYear": 145, "temp_type": "min_temp", "temp": 54.3}, {"DayOfYear": 146, "temp_type": "min_temp", "temp": 54.7}, {"DayOfYear": 147, "temp_type": "min_temp", "temp": 54.9}, {"DayOfYear": 148, "temp_type": "min_temp", "temp": 55.2}, {"DayOfYear": 149, "temp_type": "min_temp", "temp": 55.4}, {"DayOfYear": 150, "temp_type": "min_temp", "temp": 55.6}, {"DayOfYear": 151, "temp_type": "min_temp", "temp": 56.0}, {"DayOfYear": 152, "temp_type": "min_temp", "temp": 56.4}, {"DayOfYear": 153, "temp_type": "min_temp", "temp": 56.8}, {"DayOfYear": 154, "temp_type": "min_temp", "temp": 57.2}, {"DayOfYear": 155, "temp_type": "min_temp", "temp": 57.4}, {"DayOfYear": 156, "temp_type": "min_temp", "temp": 57.8}, {"DayOfYear": 157, "temp_type": "min_temp", "temp": 58.2}, {"DayOfYear": 158, "temp_type": "min_temp", "temp": 58.6}, {"DayOfYear": 159, "temp_type": "min_temp", "temp": 59.0}, {"DayOfYear": 160, "temp_type": "min_temp", "temp": 59.3}, {"DayOfYear": 161, "temp_type": "min_temp", "temp": 59.5}, {"DayOfYear": 162, "temp_type": "min_temp", "temp": 59.8}, {"DayOfYear": 163, "temp_type": "min_temp", "temp": 60.0}, {"DayOfYear": 164, "temp_type": "min_temp", "temp": 60.5}, {"DayOfYear": 165, "temp_type": "min_temp", "temp": 60.8}, {"DayOfYear": 166, "temp_type": "min_temp", "temp": 61.1}, {"DayOfYear": 167, "temp_type": "min_temp", "temp": 61.3}, {"DayOfYear": 168, "temp_type": "min_temp", "temp": 61.4}, {"DayOfYear": 169, "temp_type": "min_temp", "temp": 61.5}, {"DayOfYear": 170, "temp_type": "min_temp", "temp": 61.7}, {"DayOfYear": 171, "temp_type": "min_temp", "temp": 61.9}, {"DayOfYear": 172, "temp_type": "min_temp", "temp": 61.9}, {"DayOfYear": 173, "temp_type": "min_temp", "temp": 61.9}, {"DayOfYear": 174, "temp_type": "min_temp", "temp": 61.9}, {"DayOfYear": 175, "temp_type": "min_temp", "temp": 61.9}, {"DayOfYear": 176, "temp_type": "min_temp", "temp": 61.8}, {"DayOfYear": 177, "temp_type": "min_temp", "temp": 61.9}, {"DayOfYear": 178, "temp_type": "min_temp", "temp": 62.0}, {"DayOfYear": 179, "temp_type": "min_temp", "temp": 62.2}, {"DayOfYear": 180, "temp_type": "min_temp", "temp": 62.5}, {"DayOfYear": 181, "temp_type": "min_temp", "temp": 62.5}, {"DayOfYear": 182, "temp_type": "min_temp", "temp": 62.6}, {"DayOfYear": 183, "temp_type": "min_temp", "temp": 62.8}, {"DayOfYear": 184, "temp_type": "min_temp", "temp": 63.1}, {"DayOfYear": 185, "temp_type": "min_temp", "temp": 63.3}, {"DayOfYear": 186, "temp_type": "min_temp", "temp": 63.3}, {"DayOfYear": 187, "temp_type": "min_temp", "temp": 63.4}, {"DayOfYear": 188, "temp_type": "min_temp", "temp": 63.6}, {"DayOfYear": 189, "temp_type": "min_temp", "temp": 63.8}, {"DayOfYear": 190, "temp_type": "min_temp", "temp": 64.0}, {"DayOfYear": 191, "temp_type": "min_temp", "temp": 64.3}, {"DayOfYear": 192, "temp_type": "min_temp", "temp": 64.5}, {"DayOfYear": 193, "temp_type": "min_temp", "temp": 64.8}, {"DayOfYear": 194, "temp_type": "min_temp", "temp": 64.9}, {"DayOfYear": 195, "temp_type": "min_temp", "temp": 64.9}, {"DayOfYear": 196, "temp_type": "min_temp", "temp": 65.1}, {"DayOfYear": 197, "temp_type": "min_temp", "temp": 65.3}, {"DayOfYear": 198, "temp_type": "min_temp", "temp": 65.4}, {"DayOfYear": 199, "temp_type": "min_temp", "temp": 65.3}, {"DayOfYear": 200, "temp_type": "min_temp", "temp": 65.3}, {"DayOfYear": 201, "temp_type": "min_temp", "temp": 65.5}, {"DayOfYear": 202, "temp_type": "min_temp", "temp": 65.6}, {"DayOfYear": 203, "temp_type": "min_temp", "temp": 65.6}, {"DayOfYear": 204, "temp_type": "min_temp", "temp": 65.6}, {"DayOfYear": 205, "temp_type": "min_temp", "temp": 65.5}, {"DayOfYear": 206, "temp_type": "min_temp", "temp": 65.5}, {"DayOfYear": 207, "temp_type": "min_temp", "temp": 65.4}, {"DayOfYear": 208, "temp_type": "min_temp", "temp": 65.3}, {"DayOfYear": 209, "temp_type": "min_temp", "temp": 65.3}, {"DayOfYear": 210, "temp_type": "min_temp", "temp": 65.3}, {"DayOfYear": 211, "temp_type": "min_temp", "temp": 65.3}, {"DayOfYear": 212, "temp_type": "min_temp", "temp": 65.1}, {"DayOfYear": 213, "temp_type": "min_temp", "temp": 64.9}, {"DayOfYear": 214, "temp_type": "min_temp", "temp": 64.9}, {"DayOfYear": 215, "temp_type": "min_temp", "temp": 64.8}, {"DayOfYear": 216, "temp_type": "min_temp", "temp": 64.8}, {"DayOfYear": 217, "temp_type": "min_temp", "temp": 64.7}, {"DayOfYear": 218, "temp_type": "min_temp", "temp": 64.6}, {"DayOfYear": 219, "temp_type": "min_temp", "temp": 64.6}, {"DayOfYear": 220, "temp_type": "min_temp", "temp": 64.5}, {"DayOfYear": 221, "temp_type": "min_temp", "temp": 64.4}, {"DayOfYear": 222, "temp_type": "min_temp", "temp": 64.5}, {"DayOfYear": 223, "temp_type": "min_temp", "temp": 64.4}, {"DayOfYear": 224, "temp_type": "min_temp", "temp": 64.3}, {"DayOfYear": 225, "temp_type": "min_temp", "temp": 64.1}, {"DayOfYear": 226, "temp_type": "min_temp", "temp": 63.9}, {"DayOfYear": 227, "temp_type": "min_temp", "temp": 63.8}, {"DayOfYear": 228, "temp_type": "min_temp", "temp": 63.7}, {"DayOfYear": 229, "temp_type": "min_temp", "temp": 63.6}, {"DayOfYear": 230, "temp_type": "min_temp", "temp": 63.4}, {"DayOfYear": 231, "temp_type": "min_temp", "temp": 63.2}, {"DayOfYear": 232, "temp_type": "min_temp", "temp": 63.1}, {"DayOfYear": 233, "temp_type": "min_temp", "temp": 63.2}, {"DayOfYear": 234, "temp_type": "min_temp", "temp": 63.2}, {"DayOfYear": 235, "temp_type": "min_temp", "temp": 63.1}, {"DayOfYear": 236, "temp_type": "min_temp", "temp": 62.9}, {"DayOfYear": 237, "temp_type": "min_temp", "temp": 62.6}, {"DayOfYear": 238, "temp_type": "min_temp", "temp": 62.3}, {"DayOfYear": 239, "temp_type": "min_temp", "temp": 62.0}, {"DayOfYear": 240, "temp_type": "min_temp", "temp": 61.8}, {"DayOfYear": 241, "temp_type": "min_temp", "temp": 61.7}, {"DayOfYear": 242, "temp_type": "min_temp", "temp": 61.5}, {"DayOfYear": 243, "temp_type": "min_temp", "temp": 61.3}, {"DayOfYear": 244, "temp_type": "min_temp", "temp": 61.2}, {"DayOfYear": 245, "temp_type": "min_temp", "temp": 61.1}, {"DayOfYear": 246, "temp_type": "min_temp", "temp": 60.9}, {"DayOfYear": 247, "temp_type": "min_temp", "temp": 60.7}, {"DayOfYear": 248, "temp_type": "min_temp", "temp": 60.3}, {"DayOfYear": 249, "temp_type": "min_temp", "temp": 59.9}, {"DayOfYear": 250, "temp_type": "min_temp", "temp": 59.6}, {"DayOfYear": 251, "temp_type": "min_temp", "temp": 59.5}, {"DayOfYear": 252, "temp_type": "min_temp", "temp": 59.3}, {"DayOfYear": 253, "temp_type": "min_temp", "temp": 59.1}, {"DayOfYear": 254, "temp_type": "min_temp", "temp": 58.8}, {"DayOfYear": 255, "temp_type": "min_temp", "temp": 58.4}, {"DayOfYear": 256, "temp_type": "min_temp", "temp": 58.0}, {"DayOfYear": 257, "temp_type": "min_temp", "temp": 57.9}, {"DayOfYear": 258, "temp_type": "min_temp", "temp": 57.7}, {"DayOfYear": 259, "temp_type": "min_temp", "temp": 57.4}, {"DayOfYear": 260, "temp_type": "min_temp", "temp": 57.0}, {"DayOfYear": 261, "temp_type": "min_temp", "temp": 56.4}, {"DayOfYear": 262, "temp_type": "min_temp", "temp": 55.9}, {"DayOfYear": 263, "temp_type": "min_temp", "temp": 55.7}, {"DayOfYear": 264, "temp_type": "min_temp", "temp": 55.5}, {"DayOfYear": 265, "temp_type": "min_temp", "temp": 55.2}, {"DayOfYear": 266, "temp_type": "min_temp", "temp": 54.6}, {"DayOfYear": 267, "temp_type": "min_temp", "temp": 54.0}, {"DayOfYear": 268, "temp_type": "min_temp", "temp": 53.6}, {"DayOfYear": 269, "temp_type": "min_temp", "temp": 53.3}, {"DayOfYear": 270, "temp_type": "min_temp", "temp": 53.0}, {"DayOfYear": 271, "temp_type": "min_temp", "temp": 52.7}, {"DayOfYear": 272, "temp_type": "min_temp", "temp": 52.2}, {"DayOfYear": 273, "temp_type": "min_temp", "temp": 51.7}, {"DayOfYear": 274, "temp_type": "min_temp", "temp": 51.1}, {"DayOfYear": 275, "temp_type": "min_temp", "temp": 50.6}, {"DayOfYear": 276, "temp_type": "min_temp", "temp": 50.5}, {"DayOfYear": 277, "temp_type": "min_temp", "temp": 50.3}, {"DayOfYear": 278, "temp_type": "min_temp", "temp": 49.8}, {"DayOfYear": 279, "temp_type": "min_temp", "temp": 49.2}, {"DayOfYear": 280, "temp_type": "min_temp", "temp": 48.9}, {"DayOfYear": 281, "temp_type": "min_temp", "temp": 48.7}, {"DayOfYear": 282, "temp_type": "min_temp", "temp": 48.4}, {"DayOfYear": 283, "temp_type": "min_temp", "temp": 48.1}, {"DayOfYear": 284, "temp_type": "min_temp", "temp": 47.7}, {"DayOfYear": 285, "temp_type": "min_temp", "temp": 47.4}, {"DayOfYear": 286, "temp_type": "min_temp", "temp": 46.9}, {"DayOfYear": 287, "temp_type": "min_temp", "temp": 46.5}, {"DayOfYear": 288, "temp_type": "min_temp", "temp": 46.3}, {"DayOfYear": 289, "temp_type": "min_temp", "temp": 46.1}, {"DayOfYear": 290, "temp_type": "min_temp", "temp": 45.9}, {"DayOfYear": 291, "temp_type": "min_temp", "temp": 45.5}, {"DayOfYear": 292, "temp_type": "min_temp", "temp": 45.2}, {"DayOfYear": 293, "temp_type": "min_temp", "temp": 45.0}, {"DayOfYear": 294, "temp_type": "min_temp", "temp": 44.9}, {"DayOfYear": 295, "temp_type": "min_temp", "temp": 44.7}, {"DayOfYear": 296, "temp_type": "min_temp", "temp": 44.2}, {"DayOfYear": 297, "temp_type": "min_temp", "temp": 43.8}, {"DayOfYear": 298, "temp_type": "min_temp", "temp": 43.7}, {"DayOfYear": 299, "temp_type": "min_temp", "temp": 43.7}, {"DayOfYear": 300, "temp_type": "min_temp", "temp": 43.5}, {"DayOfYear": 301, "temp_type": "min_temp", "temp": 43.3}, {"DayOfYear": 302, "temp_type": "min_temp", "temp": 43.1}, {"DayOfYear": 303, "temp_type": "min_temp", "temp": 42.9}, {"DayOfYear": 304, "temp_type": "min_temp", "temp": 42.7}, {"DayOfYear": 305, "temp_type": "min_temp", "temp": 42.3}, {"DayOfYear": 306, "temp_type": "min_temp", "temp": 41.9}, {"DayOfYear": 307, "temp_type": "min_temp", "temp": 41.6}, {"DayOfYear": 308, "temp_type": "min_temp", "temp": 41.4}, {"DayOfYear": 309, "temp_type": "min_temp", "temp": 41.1}, {"DayOfYear": 310, "temp_type": "min_temp", "temp": 40.6}, {"DayOfYear": 311, "temp_type": "min_temp", "temp": 40.4}, {"DayOfYear": 312, "temp_type": "min_temp", "temp": 40.2}, {"DayOfYear": 313, "temp_type": "min_temp", "temp": 39.9}, {"DayOfYear": 314, "temp_type": "min_temp", "temp": 39.5}, {"DayOfYear": 315, "temp_type": "min_temp", "temp": 39.0}, {"DayOfYear": 316, "temp_type": "min_temp", "temp": 38.7}, {"DayOfYear": 317, "temp_type": "min_temp", "temp": 38.6}, {"DayOfYear": 318, "temp_type": "min_temp", "temp": 38.5}, {"DayOfYear": 319, "temp_type": "min_temp", "temp": 38.3}, {"DayOfYear": 320, "temp_type": "min_temp", "temp": 38.2}, {"DayOfYear": 321, "temp_type": "min_temp", "temp": 37.9}, {"DayOfYear": 322, "temp_type": "min_temp", "temp": 37.6}, {"DayOfYear": 323, "temp_type": "min_temp", "temp": 37.1}, {"DayOfYear": 324, "temp_type": "min_temp", "temp": 37.0}, {"DayOfYear": 325, "temp_type": "min_temp", "temp": 37.1}, {"DayOfYear": 326, "temp_type": "min_temp", "temp": 37.3}, {"DayOfYear": 327, "temp_type": "min_temp", "temp": 37.2}, {"DayOfYear": 328, "temp_type": "min_temp", "temp": 37.0}, {"DayOfYear": 329, "temp_type": "min_temp", "temp": 36.9}, {"DayOfYear": 330, "temp_type": "min_temp", "temp": 36.5}, {"DayOfYear": 331, "temp_type": "min_temp", "temp": 36.4}, {"DayOfYear": 332, "temp_type": "min_temp", "temp": 36.0}, {"DayOfYear": 333, "temp_type": "min_temp", "temp": 35.5}, {"DayOfYear": 334, "temp_type": "min_temp", "temp": 35.1}, {"DayOfYear": 335, "temp_type": "min_temp", "temp": 34.7}, {"DayOfYear": 336, "temp_type": "min_temp", "temp": 34.3}, {"DayOfYear": 337, "temp_type": "min_temp", "temp": 33.9}, {"DayOfYear": 338, "temp_type": "min_temp", "temp": 33.8}, {"DayOfYear": 339, "temp_type": "min_temp", "temp": 33.3}, {"DayOfYear": 340, "temp_type": "min_temp", "temp": 32.8}, {"DayOfYear": 341, "temp_type": "min_temp", "temp": 32.2}, {"DayOfYear": 342, "temp_type": "min_temp", "temp": 31.7}, {"DayOfYear": 343, "temp_type": "min_temp", "temp": 31.4}, {"DayOfYear": 344, "temp_type": "min_temp", "temp": 31.0}, {"DayOfYear": 345, "temp_type": "min_temp", "temp": 30.9}, {"DayOfYear": 346, "temp_type": "min_temp", "temp": 30.4}, {"DayOfYear": 347, "temp_type": "min_temp", "temp": 30.1}, {"DayOfYear": 348, "temp_type": "min_temp", "temp": 29.6}, {"DayOfYear": 349, "temp_type": "min_temp", "temp": 29.3}, {"DayOfYear": 350, "temp_type": "min_temp", "temp": 29.1}, {"DayOfYear": 351, "temp_type": "min_temp", "temp": 29.2}, {"DayOfYear": 352, "temp_type": "min_temp", "temp": 29.0}, {"DayOfYear": 353, "temp_type": "min_temp", "temp": 28.5}, {"DayOfYear": 354, "temp_type": "min_temp", "temp": 28.1}, {"DayOfYear": 355, "temp_type": "min_temp", "temp": 27.8}, {"DayOfYear": 356, "temp_type": "min_temp", "temp": 27.8}, {"DayOfYear": 357, "temp_type": "min_temp", "temp": 27.8}, {"DayOfYear": 358, "temp_type": "min_temp", "temp": 27.4}, {"DayOfYear": 359, "temp_type": "min_temp", "temp": 27.6}, {"DayOfYear": 360, "temp_type": "min_temp", "temp": 27.5}, {"DayOfYear": 361, "temp_type": "min_temp", "temp": 27.6}, {"DayOfYear": 362, "temp_type": "min_temp", "temp": 27.9}, {"DayOfYear": 363, "temp_type": "min_temp", "temp": 28.1}, {"DayOfYear": 364, "temp_type": "min_temp", "temp": 28.1}, {"DayOfYear": 365, "temp_type": "min_temp", "temp": 28.3}, {"DayOfYear": 366, "temp_type": "min_temp", "temp": 28.1}, {"DayOfYear": 1, "temp_type": "mean_temp", "temp": 30.7}, {"DayOfYear": 2, "temp_type": "mean_temp", "temp": 30.9}, {"DayOfYear": 3, "temp_type": "mean_temp", "temp": 30.9}, {"DayOfYear": 4, "temp_type": "mean_temp", "temp": 30.8}, {"DayOfYear": 5, "temp_type": "mean_temp", "temp": 30.6}, {"DayOfYear": 6, "temp_type": "mean_temp", "temp": 30.6}, {"DayOfYear": 7, "temp_type": "mean_temp", "temp": 30.4}, {"DayOfYear": 8, "temp_type": "mean_temp", "temp": 30.0}, {"DayOfYear": 9, "temp_type": "mean_temp", "temp": 29.6}, {"DayOfYear": 10, "temp_type": "mean_temp", "temp": 29.3}, {"DayOfYear": 11, "temp_type": "mean_temp", "temp": 28.9}, {"DayOfYear": 12, "temp_type": "mean_temp", "temp": 28.5}, {"DayOfYear": 13, "temp_type": "mean_temp", "temp": 28.2}, {"DayOfYear": 14, "temp_type": "mean_temp", "temp": 27.7}, {"DayOfYear": 15, "temp_type": "mean_temp", "temp": 27.5}, {"DayOfYear": 16, "temp_type": "mean_temp", "temp": 27.6}, {"DayOfYear": 17, "temp_type": "mean_temp", "temp": 27.6}, {"DayOfYear": 18, "temp_type": "mean_temp", "temp": 27.6}, {"DayOfYear": 19, "temp_type": "mean_temp", "temp": 27.5}, {"DayOfYear": 20, "temp_type": "mean_temp", "temp": 27.2}, {"DayOfYear": 21, "temp_type": "mean_temp", "temp": 27.0}, {"DayOfYear": 22, "temp_type": "mean_temp", "temp": 27.1}, {"DayOfYear": 23, "temp_type": "mean_temp", "temp": 27.3}, {"DayOfYear": 24, "temp_type": "mean_temp", "temp": 27.5}, {"DayOfYear": 25, "temp_type": "mean_temp", "temp": 27.7}, {"DayOfYear": 26, "temp_type": "mean_temp", "temp": 28.0}, {"DayOfYear": 27, "temp_type": "mean_temp", "temp": 28.3}, {"DayOfYear": 28, "temp_type": "mean_temp", "temp": 28.6}, {"DayOfYear": 29, "temp_type": "mean_temp", "temp": 28.8}, {"DayOfYear": 30, "temp_type": "mean_temp", "temp": 28.8}, {"DayOfYear": 31, "temp_type": "mean_temp", "temp": 28.8}, {"DayOfYear": 32, "temp_type": "mean_temp", "temp": 28.7}, {"DayOfYear": 33, "temp_type": "mean_temp", "temp": 28.9}, {"DayOfYear": 34, "temp_type": "mean_temp", "temp": 29.1}, {"DayOfYear": 35, "temp_type": "mean_temp", "temp": 29.3}, {"DayOfYear": 36, "temp_type": "mean_temp", "temp": 29.2}, {"DayOfYear": 37, "temp_type": "mean_temp", "temp": 29.1}, {"DayOfYear": 38, "temp_type": "mean_temp", "temp": 29.1}, {"DayOfYear": 39, "temp_type": "mean_temp", "temp": 29.4}, {"DayOfYear": 40, "temp_type": "mean_temp", "temp": 29.4}, {"DayOfYear": 41, "temp_type": "mean_temp", "temp": 29.4}, {"DayOfYear": 42, "temp_type": "mean_temp", "temp": 29.7}, {"DayOfYear": 43, "temp_type": "mean_temp", "temp": 30.1}, {"DayOfYear": 44, "temp_type": "mean_temp", "temp": 30.7}, {"DayOfYear": 45, "temp_type": "mean_temp", "temp": 31.2}, {"DayOfYear": 46, "temp_type": "mean_temp", "temp": 31.8}, {"DayOfYear": 47, "temp_type": "mean_temp", "temp": 32.2}, {"DayOfYear": 48, "temp_type": "mean_temp", "temp": 32.5}, {"DayOfYear": 49, "temp_type": "mean_temp", "temp": 32.6}, {"DayOfYear": 50, "temp_type": "mean_temp", "temp": 32.7}, {"DayOfYear": 51, "temp_type": "mean_temp", "temp": 33.2}, {"DayOfYear": 52, "temp_type": "mean_temp", "temp": 33.5}, {"DayOfYear": 53, "temp_type": "mean_temp", "temp": 33.8}, {"DayOfYear": 54, "temp_type": "mean_temp", "temp": 34.0}, {"DayOfYear": 55, "temp_type": "mean_temp", "temp": 34.1}, {"DayOfYear": 56, "temp_type": "mean_temp", "temp": 34.2}, {"DayOfYear": 57, "temp_type": "mean_temp", "temp": 34.4}, {"DayOfYear": 58, "temp_type": "mean_temp", "temp": 34.6}, {"DayOfYear": 59, "temp_type": "mean_temp", "temp": 34.6}, {"DayOfYear": 61, "temp_type": "mean_temp", "temp": 34.7}, {"DayOfYear": 62, "temp_type": "mean_temp", "temp": 34.6}, {"DayOfYear": 63, "temp_type": "mean_temp", "temp": 34.7}, {"DayOfYear": 64, "temp_type": "mean_temp", "temp": 34.9}, {"DayOfYear": 65, "temp_type": "mean_temp", "temp": 35.3}, {"DayOfYear": 66, "temp_type": "mean_temp", "temp": 35.8}, {"DayOfYear": 67, "temp_type": "mean_temp", "temp": 36.3}, {"DayOfYear": 68, "temp_type": "mean_temp", "temp": 36.9}, {"DayOfYear": 69, "temp_type": "mean_temp", "temp": 37.1}, {"DayOfYear": 70, "temp_type": "mean_temp", "temp": 37.3}, {"DayOfYear": 71, "temp_type": "mean_temp", "temp": 37.7}, {"DayOfYear": 72, "temp_type": "mean_temp", "temp": 38.1}, {"DayOfYear": 73, "temp_type": "mean_temp", "temp": 38.2}, {"DayOfYear": 74, "temp_type": "mean_temp", "temp": 38.4}, {"DayOfYear": 75, "temp_type": "mean_temp", "temp": 38.4}, {"DayOfYear": 76, "temp_type": "mean_temp", "temp": 38.7}, {"DayOfYear": 77, "temp_type": "mean_temp", "temp": 39.0}, {"DayOfYear": 78, "temp_type": "mean_temp", "temp": 39.6}, {"DayOfYear": 79, "temp_type": "mean_temp", "temp": 40.2}, {"DayOfYear": 80, "temp_type": "mean_temp", "temp": 40.8}, {"DayOfYear": 81, "temp_type": "mean_temp", "temp": 41.2}, {"DayOfYear": 82, "temp_type": "mean_temp", "temp": 41.8}, {"DayOfYear": 83, "temp_type": "mean_temp", "temp": 42.2}, {"DayOfYear": 84, "temp_type": "mean_temp", "temp": 42.8}, {"DayOfYear": 85, "temp_type": "mean_temp", "temp": 43.4}, {"DayOfYear": 86, "temp_type": "mean_temp", "temp": 44.0}, {"DayOfYear": 87, "temp_type": "mean_temp", "temp": 44.6}, {"DayOfYear": 88, "temp_type": "mean_temp", "temp": 45.1}, {"DayOfYear": 89, "temp_type": "mean_temp", "temp": 45.6}, {"DayOfYear": 90, "temp_type": "mean_temp", "temp": 46.2}, {"DayOfYear": 91, "temp_type": "mean_temp", "temp": 46.7}, {"DayOfYear": 92, "temp_type": "mean_temp", "temp": 47.1}, {"DayOfYear": 93, "temp_type": "mean_temp", "temp": 47.3}, {"DayOfYear": 94, "temp_type": "mean_temp", "temp": 47.4}, {"DayOfYear": 95, "temp_type": "mean_temp", "temp": 47.6}, {"DayOfYear": 96, "temp_type": "mean_temp", "temp": 47.8}, {"DayOfYear": 97, "temp_type": "mean_temp", "temp": 47.8}, {"DayOfYear": 98, "temp_type": "mean_temp", "temp": 48.1}, {"DayOfYear": 99, "temp_type": "mean_temp", "temp": 48.4}, {"DayOfYear": 100, "temp_type": "mean_temp", "temp": 48.7}, {"DayOfYear": 101, "temp_type": "mean_temp", "temp": 49.0}, {"DayOfYear": 102, "temp_type": "mean_temp", "temp": 49.1}, {"DayOfYear": 103, "temp_type": "mean_temp", "temp": 49.6}, {"DayOfYear": 104, "temp_type": "mean_temp", "temp": 50.2}, {"DayOfYear": 105, "temp_type": "mean_temp", "temp": 50.6}, {"DayOfYear": 106, "temp_type": "mean_temp", "temp": 50.9}, {"DayOfYear": 107, "temp_type": "mean_temp", "temp": 51.3}, {"DayOfYear": 108, "temp_type": "mean_temp", "temp": 51.7}, {"DayOfYear": 109, "temp_type": "mean_temp", "temp": 52.3}, {"DayOfYear": 110, "temp_type": "mean_temp", "temp": 52.7}, {"DayOfYear": 111, "temp_type": "mean_temp", "temp": 53.2}, {"DayOfYear": 112, "temp_type": "mean_temp", "temp": 53.6}, {"DayOfYear": 113, "temp_type": "mean_temp", "temp": 53.9}, {"DayOfYear": 114, "temp_type": "mean_temp", "temp": 54.3}, {"DayOfYear": 115, "temp_type": "mean_temp", "temp": 54.6}, {"DayOfYear": 116, "temp_type": "mean_temp", "temp": 55.0}, {"DayOfYear": 117, "temp_type": "mean_temp", "temp": 55.2}, {"DayOfYear": 118, "temp_type": "mean_temp", "temp": 55.2}, {"DayOfYear": 119, "temp_type": "mean_temp", "temp": 55.4}, {"DayOfYear": 120, "temp_type": "mean_temp", "temp": 55.8}, {"DayOfYear": 121, "temp_type": "mean_temp", "temp": 56.2}, {"DayOfYear": 122, "temp_type": "mean_temp", "temp": 56.5}, {"DayOfYear": 123, "temp_type": "mean_temp", "temp": 57.0}, {"DayOfYear": 124, "temp_type": "mean_temp", "temp": 57.4}, {"DayOfYear": 125, "temp_type": "mean_temp", "temp": 57.6}, {"DayOfYear": 126, "temp_type": "mean_temp", "temp": 57.9}, {"DayOfYear": 127, "temp_type": "mean_temp", "temp": 58.1}, {"DayOfYear": 128, "temp_type": "mean_temp", "temp": 58.4}, {"DayOfYear": 129, "temp_type": "mean_temp", "temp": 58.6}, {"DayOfYear": 130, "temp_type": "mean_temp", "temp": 58.7}, {"DayOfYear": 131, "temp_type": "mean_temp", "temp": 58.9}, {"DayOfYear": 132, "temp_type": "mean_temp", "temp": 59.2}, {"DayOfYear": 133, "temp_type": "mean_temp", "temp": 59.6}, {"DayOfYear": 134, "temp_type": "mean_temp", "temp": 59.8}, {"DayOfYear": 135, "temp_type": "mean_temp", "temp": 59.9}, {"DayOfYear": 136, "temp_type": "mean_temp", "temp": 60.1}, {"DayOfYear": 137, "temp_type": "mean_temp", "temp": 60.5}, {"DayOfYear": 138, "temp_type": "mean_temp", "temp": 60.7}, {"DayOfYear": 139, "temp_type": "mean_temp", "temp": 60.8}, {"DayOfYear": 140, "temp_type": "mean_temp", "temp": 61.0}, {"DayOfYear": 141, "temp_type": "mean_temp", "temp": 61.2}, {"DayOfYear": 142, "temp_type": "mean_temp", "temp": 61.5}, {"DayOfYear": 143, "temp_type": "mean_temp", "temp": 61.8}, {"DayOfYear": 144, "temp_type": "mean_temp", "temp": 62.1}, {"DayOfYear": 145, "temp_type": "mean_temp", "temp": 62.6}, {"DayOfYear": 146, "temp_type": "mean_temp", "temp": 63.0}, {"DayOfYear": 147, "temp_type": "mean_temp", "temp": 63.4}, {"DayOfYear": 148, "temp_type": "mean_temp", "temp": 63.5}, {"DayOfYear": 149, "temp_type": "mean_temp", "temp": 63.7}, {"DayOfYear": 150, "temp_type": "mean_temp", "temp": 64.0}, {"DayOfYear": 151, "temp_type": "mean_temp", "temp": 64.2}, {"DayOfYear": 152, "temp_type": "mean_temp", "temp": 64.6}, {"DayOfYear": 153, "temp_type": "mean_temp", "temp": 65.0}, {"DayOfYear": 154, "temp_type": "mean_temp", "temp": 65.4}, {"DayOfYear": 155, "temp_type": "mean_temp", "temp": 65.8}, {"DayOfYear": 156, "temp_type": "mean_temp", "temp": 66.2}, {"DayOfYear": 157, "temp_type": "mean_temp", "temp": 66.6}, {"DayOfYear": 158, "temp_type": "mean_temp", "temp": 67.0}, {"DayOfYear": 159, "temp_type": "mean_temp", "temp": 67.4}, {"DayOfYear": 160, "temp_type": "mean_temp", "temp": 67.6}, {"DayOfYear": 161, "temp_type": "mean_temp", "temp": 67.9}, {"DayOfYear": 162, "temp_type": "mean_temp", "temp": 68.2}, {"DayOfYear": 163, "temp_type": "mean_temp", "temp": 68.7}, {"DayOfYear": 164, "temp_type": "mean_temp", "temp": 69.1}, {"DayOfYear": 165, "temp_type": "mean_temp", "temp": 69.5}, {"DayOfYear": 166, "temp_type": "mean_temp", "temp": 69.7}, {"DayOfYear": 167, "temp_type": "mean_temp", "temp": 70.0}, {"DayOfYear": 168, "temp_type": "mean_temp", "temp": 70.0}, {"DayOfYear": 169, "temp_type": "mean_temp", "temp": 70.1}, {"DayOfYear": 170, "temp_type": "mean_temp", "temp": 70.3}, {"DayOfYear": 171, "temp_type": "mean_temp", "temp": 70.5}, {"DayOfYear": 172, "temp_type": "mean_temp", "temp": 70.6}, {"DayOfYear": 173, "temp_type": "mean_temp", "temp": 70.6}, {"DayOfYear": 174, "temp_type": "mean_temp", "temp": 70.6}, {"DayOfYear": 175, "temp_type": "mean_temp", "temp": 70.5}, {"DayOfYear": 176, "temp_type": "mean_temp", "temp": 70.4}, {"DayOfYear": 177, "temp_type": "mean_temp", "temp": 70.5}, {"DayOfYear": 178, "temp_type": "mean_temp", "temp": 70.6}, {"DayOfYear": 179, "temp_type": "mean_temp", "temp": 70.8}, {"DayOfYear": 180, "temp_type": "mean_temp", "temp": 71.0}, {"DayOfYear": 181, "temp_type": "mean_temp", "temp": 71.1}, {"DayOfYear": 182, "temp_type": "mean_temp", "temp": 71.2}, {"DayOfYear": 183, "temp_type": "mean_temp", "temp": 71.4}, {"DayOfYear": 184, "temp_type": "mean_temp", "temp": 71.6}, {"DayOfYear": 185, "temp_type": "mean_temp", "temp": 71.6}, {"DayOfYear": 186, "temp_type": "mean_temp", "temp": 71.7}, {"DayOfYear": 187, "temp_type": "mean_temp", "temp": 71.8}, {"DayOfYear": 188, "temp_type": "mean_temp", "temp": 71.9}, {"DayOfYear": 189, "temp_type": "mean_temp", "temp": 72.1}, {"DayOfYear": 190, "temp_type": "mean_temp", "temp": 72.4}, {"DayOfYear": 191, "temp_type": "mean_temp", "temp": 72.7}, {"DayOfYear": 192, "temp_type": "mean_temp", "temp": 73.0}, {"DayOfYear": 193, "temp_type": "mean_temp", "temp": 73.2}, {"DayOfYear": 194, "temp_type": "mean_temp", "temp": 73.2}, {"DayOfYear": 195, "temp_type": "mean_temp", "temp": 73.3}, {"DayOfYear": 196, "temp_type": "mean_temp", "temp": 73.4}, {"DayOfYear": 197, "temp_type": "mean_temp", "temp": 73.4}, {"DayOfYear": 198, "temp_type": "mean_temp", "temp": 73.3}, {"DayOfYear": 199, "temp_type": "mean_temp", "temp": 73.2}, {"DayOfYear": 200, "temp_type": "mean_temp", "temp": 73.3}, {"DayOfYear": 201, "temp_type": "mean_temp", "temp": 73.4}, {"DayOfYear": 202, "temp_type": "mean_temp", "temp": 73.4}, {"DayOfYear": 203, "temp_type": "mean_temp", "temp": 73.4}, {"DayOfYear": 204, "temp_type": "mean_temp", "temp": 73.3}, {"DayOfYear": 205, "temp_type": "mean_temp", "temp": 73.3}, {"DayOfYear": 206, "temp_type": "mean_temp", "temp": 73.2}, {"DayOfYear": 207, "temp_type": "mean_temp", "temp": 73.1}, {"DayOfYear": 208, "temp_type": "mean_temp", "temp": 73.1}, {"DayOfYear": 209, "temp_type": "mean_temp", "temp": 73.2}, {"DayOfYear": 210, "temp_type": "mean_temp", "temp": 73.2}, {"DayOfYear": 211, "temp_type": "mean_temp", "temp": 73.0}, {"DayOfYear": 212, "temp_type": "mean_temp", "temp": 72.9}, {"DayOfYear": 213, "temp_type": "mean_temp", "temp": 72.9}, {"DayOfYear": 214, "temp_type": "mean_temp", "temp": 72.9}, {"DayOfYear": 215, "temp_type": "mean_temp", "temp": 72.8}, {"DayOfYear": 216, "temp_type": "mean_temp", "temp": 72.7}, {"DayOfYear": 217, "temp_type": "mean_temp", "temp": 72.6}, {"DayOfYear": 218, "temp_type": "mean_temp", "temp": 72.5}, {"DayOfYear": 219, "temp_type": "mean_temp", "temp": 72.5}, {"DayOfYear": 220, "temp_type": "mean_temp", "temp": 72.5}, {"DayOfYear": 221, "temp_type": "mean_temp", "temp": 72.4}, {"DayOfYear": 222, "temp_type": "mean_temp", "temp": 72.3}, {"DayOfYear": 223, "temp_type": "mean_temp", "temp": 72.2}, {"DayOfYear": 224, "temp_type": "mean_temp", "temp": 72.0}, {"DayOfYear": 225, "temp_type": "mean_temp", "temp": 71.8}, {"DayOfYear": 226, "temp_type": "mean_temp", "temp": 71.7}, {"DayOfYear": 227, "temp_type": "mean_temp", "temp": 71.6}, {"DayOfYear": 228, "temp_type": "mean_temp", "temp": 71.5}, {"DayOfYear": 229, "temp_type": "mean_temp", "temp": 71.3}, {"DayOfYear": 230, "temp_type": "mean_temp", "temp": 71.2}, {"DayOfYear": 231, "temp_type": "mean_temp", "temp": 71.1}, {"DayOfYear": 232, "temp_type": "mean_temp", "temp": 71.1}, {"DayOfYear": 233, "temp_type": "mean_temp", "temp": 71.1}, {"DayOfYear": 234, "temp_type": "mean_temp", "temp": 71.0}, {"DayOfYear": 235, "temp_type": "mean_temp", "temp": 70.9}, {"DayOfYear": 236, "temp_type": "mean_temp", "temp": 70.7}, {"DayOfYear": 237, "temp_type": "mean_temp", "temp": 70.4}, {"DayOfYear": 238, "temp_type": "mean_temp", "temp": 70.1}, {"DayOfYear": 239, "temp_type": "mean_temp", "temp": 70.0}, {"DayOfYear": 240, "temp_type": "mean_temp", "temp": 69.9}, {"DayOfYear": 241, "temp_type": "mean_temp", "temp": 69.7}, {"DayOfYear": 242, "temp_type": "mean_temp", "temp": 69.6}, {"DayOfYear": 243, "temp_type": "mean_temp", "temp": 69.4}, {"DayOfYear": 244, "temp_type": "mean_temp", "temp": 69.3}, {"DayOfYear": 245, "temp_type": "mean_temp", "temp": 69.2}, {"DayOfYear": 246, "temp_type": "mean_temp", "temp": 69.0}, {"DayOfYear": 247, "temp_type": "mean_temp", "temp": 68.7}, {"DayOfYear": 248, "temp_type": "mean_temp", "temp": 68.3}, {"DayOfYear": 249, "temp_type": "mean_temp", "temp": 67.9}, {"DayOfYear": 250, "temp_type": "mean_temp", "temp": 67.7}, {"DayOfYear": 251, "temp_type": "mean_temp", "temp": 67.6}, {"DayOfYear": 252, "temp_type": "mean_temp", "temp": 67.3}, {"DayOfYear": 253, "temp_type": "mean_temp", "temp": 67.0}, {"DayOfYear": 254, "temp_type": "mean_temp", "temp": 66.5}, {"DayOfYear": 255, "temp_type": "mean_temp", "temp": 66.1}, {"DayOfYear": 256, "temp_type": "mean_temp", "temp": 65.8}, {"DayOfYear": 257, "temp_type": "mean_temp", "temp": 65.6}, {"DayOfYear": 258, "temp_type": "mean_temp", "temp": 65.3}, {"DayOfYear": 259, "temp_type": "mean_temp", "temp": 64.8}, {"DayOfYear": 260, "temp_type": "mean_temp", "temp": 64.3}, {"DayOfYear": 261, "temp_type": "mean_temp", "temp": 63.8}, {"DayOfYear": 262, "temp_type": "mean_temp", "temp": 63.3}, {"DayOfYear": 263, "temp_type": "mean_temp", "temp": 62.9}, {"DayOfYear": 264, "temp_type": "mean_temp", "temp": 62.5}, {"DayOfYear": 265, "temp_type": "mean_temp", "temp": 62.0}, {"DayOfYear": 266, "temp_type": "mean_temp", "temp": 61.4}, {"DayOfYear": 267, "temp_type": "mean_temp", "temp": 61.0}, {"DayOfYear": 268, "temp_type": "mean_temp", "temp": 60.6}, {"DayOfYear": 269, "temp_type": "mean_temp", "temp": 60.4}, {"DayOfYear": 270, "temp_type": "mean_temp", "temp": 60.0}, {"DayOfYear": 271, "temp_type": "mean_temp", "temp": 59.6}, {"DayOfYear": 272, "temp_type": "mean_temp", "temp": 59.1}, {"DayOfYear": 273, "temp_type": "mean_temp", "temp": 58.6}, {"DayOfYear": 274, "temp_type": "mean_temp", "temp": 58.1}, {"DayOfYear": 275, "temp_type": "mean_temp", "temp": 57.7}, {"DayOfYear": 276, "temp_type": "mean_temp", "temp": 57.5}, {"DayOfYear": 277, "temp_type": "mean_temp", "temp": 57.3}, {"DayOfYear": 278, "temp_type": "mean_temp", "temp": 56.8}, {"DayOfYear": 279, "temp_type": "mean_temp", "temp": 56.4}, {"DayOfYear": 280, "temp_type": "mean_temp", "temp": 56.1}, {"DayOfYear": 281, "temp_type": "mean_temp", "temp": 55.8}, {"DayOfYear": 282, "temp_type": "mean_temp", "temp": 55.5}, {"DayOfYear": 283, "temp_type": "mean_temp", "temp": 55.2}, {"DayOfYear": 284, "temp_type": "mean_temp", "temp": 54.7}, {"DayOfYear": 285, "temp_type": "mean_temp", "temp": 54.3}, {"DayOfYear": 286, "temp_type": "mean_temp", "temp": 53.8}, {"DayOfYear": 287, "temp_type": "mean_temp", "temp": 53.4}, {"DayOfYear": 288, "temp_type": "mean_temp", "temp": 53.1}, {"DayOfYear": 289, "temp_type": "mean_temp", "temp": 52.8}, {"DayOfYear": 290, "temp_type": "mean_temp", "temp": 52.5}, {"DayOfYear": 291, "temp_type": "mean_temp", "temp": 52.1}, {"DayOfYear": 292, "temp_type": "mean_temp", "temp": 51.7}, {"DayOfYear": 293, "temp_type": "mean_temp", "temp": 51.5}, {"DayOfYear": 294, "temp_type": "mean_temp", "temp": 51.3}, {"DayOfYear": 295, "temp_type": "mean_temp", "temp": 50.9}, {"DayOfYear": 296, "temp_type": "mean_temp", "temp": 50.5}, {"DayOfYear": 297, "temp_type": "mean_temp", "temp": 50.2}, {"DayOfYear": 298, "temp_type": "mean_temp", "temp": 50.1}, {"DayOfYear": 299, "temp_type": "mean_temp", "temp": 50.0}, {"DayOfYear": 300, "temp_type": "mean_temp", "temp": 49.9}, {"DayOfYear": 301, "temp_type": "mean_temp", "temp": 49.7}, {"DayOfYear": 302, "temp_type": "mean_temp", "temp": 49.4}, {"DayOfYear": 303, "temp_type": "mean_temp", "temp": 49.1}, {"DayOfYear": 304, "temp_type": "mean_temp", "temp": 48.7}, {"DayOfYear": 305, "temp_type": "mean_temp", "temp": 48.3}, {"DayOfYear": 306, "temp_type": "mean_temp", "temp": 47.9}, {"DayOfYear": 307, "temp_type": "mean_temp", "temp": 47.6}, {"DayOfYear": 308, "temp_type": "mean_temp", "temp": 47.2}, {"DayOfYear": 309, "temp_type": "mean_temp", "temp": 46.7}, {"DayOfYear": 310, "temp_type": "mean_temp", "temp": 46.2}, {"DayOfYear": 311, "temp_type": "mean_temp", "temp": 45.9}, {"DayOfYear": 312, "temp_type": "mean_temp", "temp": 45.6}, {"DayOfYear": 313, "temp_type": "mean_temp", "temp": 45.1}, {"DayOfYear": 314, "temp_type": "mean_temp", "temp": 44.6}, {"DayOfYear": 315, "temp_type": "mean_temp", "temp": 44.0}, {"DayOfYear": 316, "temp_type": "mean_temp", "temp": 43.6}, {"DayOfYear": 317, "temp_type": "mean_temp", "temp": 43.4}, {"DayOfYear": 318, "temp_type": "mean_temp", "temp": 43.2}, {"DayOfYear": 319, "temp_type": "mean_temp", "temp": 43.0}, {"DayOfYear": 320, "temp_type": "mean_temp", "temp": 42.8}, {"DayOfYear": 321, "temp_type": "mean_temp", "temp": 42.4}, {"DayOfYear": 322, "temp_type": "mean_temp", "temp": 42.0}, {"DayOfYear": 323, "temp_type": "mean_temp", "temp": 41.6}, {"DayOfYear": 324, "temp_type": "mean_temp", "temp": 41.5}, {"DayOfYear": 325, "temp_type": "mean_temp", "temp": 41.6}, {"DayOfYear": 326, "temp_type": "mean_temp", "temp": 41.5}, {"DayOfYear": 327, "temp_type": "mean_temp", "temp": 41.3}, {"DayOfYear": 328, "temp_type": "mean_temp", "temp": 41.0}, {"DayOfYear": 329, "temp_type": "mean_temp", "temp": 40.7}, {"DayOfYear": 330, "temp_type": "mean_temp", "temp": 40.4}, {"DayOfYear": 331, "temp_type": "mean_temp", "temp": 40.2}, {"DayOfYear": 332, "temp_type": "mean_temp", "temp": 39.7}, {"DayOfYear": 333, "temp_type": "mean_temp", "temp": 39.1}, {"DayOfYear": 334, "temp_type": "mean_temp", "temp": 38.7}, {"DayOfYear": 335, "temp_type": "mean_temp", "temp": 38.2}, {"DayOfYear": 336, "temp_type": "mean_temp", "temp": 37.7}, {"DayOfYear": 337, "temp_type": "mean_temp", "temp": 37.3}, {"DayOfYear": 338, "temp_type": "mean_temp", "temp": 37.0}, {"DayOfYear": 339, "temp_type": "mean_temp", "temp": 36.4}, {"DayOfYear": 340, "temp_type": "mean_temp", "temp": 35.8}, {"DayOfYear": 341, "temp_type": "mean_temp", "temp": 35.3}, {"DayOfYear": 342, "temp_type": "mean_temp", "temp": 34.9}, {"DayOfYear": 343, "temp_type": "mean_temp", "temp": 34.6}, {"DayOfYear": 344, "temp_type": "mean_temp", "temp": 34.2}, {"DayOfYear": 345, "temp_type": "mean_temp", "temp": 33.9}, {"DayOfYear": 346, "temp_type": "mean_temp", "temp": 33.4}, {"DayOfYear": 347, "temp_type": "mean_temp", "temp": 33.1}, {"DayOfYear": 348, "temp_type": "mean_temp", "temp": 32.7}, {"DayOfYear": 349, "temp_type": "mean_temp", "temp": 32.4}, {"DayOfYear": 350, "temp_type": "mean_temp", "temp": 32.3}, {"DayOfYear": 351, "temp_type": "mean_temp", "temp": 32.3}, {"DayOfYear": 352, "temp_type": "mean_temp", "temp": 32.0}, {"DayOfYear": 353, "temp_type": "mean_temp", "temp": 31.5}, {"DayOfYear": 354, "temp_type": "mean_temp", "temp": 31.0}, {"DayOfYear": 355, "temp_type": "mean_temp", "temp": 30.8}, {"DayOfYear": 356, "temp_type": "mean_temp", "temp": 30.8}, {"DayOfYear": 357, "temp_type": "mean_temp", "temp": 30.7}, {"DayOfYear": 358, "temp_type": "mean_temp", "temp": 30.4}, {"DayOfYear": 359, "temp_type": "mean_temp", "temp": 30.5}, {"DayOfYear": 360, "temp_type": "mean_temp", "temp": 30.5}, {"DayOfYear": 361, "temp_type": "mean_temp", "temp": 30.6}, {"DayOfYear": 362, "temp_type": "mean_temp", "temp": 30.9}, {"DayOfYear": 363, "temp_type": "mean_temp", "temp": 31.0}, {"DayOfYear": 364, "temp_type": "mean_temp", "temp": 31.0}, {"DayOfYear": 365, "temp_type": "mean_temp", "temp": 31.0}, {"DayOfYear": 366, "temp_type": "mean_temp", "temp": 30.8}, {"DayOfYear": 1, "temp_type": "max_temp", "temp": 34.6}, {"DayOfYear": 2, "temp_type": "max_temp", "temp": 34.8}, {"DayOfYear": 3, "temp_type": "max_temp", "temp": 34.8}, {"DayOfYear": 4, "temp_type": "max_temp", "temp": 34.6}, {"DayOfYear": 5, "temp_type": "max_temp", "temp": 34.5}, {"DayOfYear": 6, "temp_type": "max_temp", "temp": 34.3}, {"DayOfYear": 7, "temp_type": "max_temp", "temp": 34.2}, {"DayOfYear": 8, "temp_type": "max_temp", "temp": 33.7}, {"DayOfYear": 9, "temp_type": "max_temp", "temp": 33.3}, {"DayOfYear": 10, "temp_type": "max_temp", "temp": 32.9}, {"DayOfYear": 11, "temp_type": "max_temp", "temp": 32.6}, {"DayOfYear": 12, "temp_type": "max_temp", "temp": 32.2}, {"DayOfYear": 13, "temp_type": "max_temp", "temp": 31.9}, {"DayOfYear": 14, "temp_type": "max_temp", "temp": 31.5}, {"DayOfYear": 15, "temp_type": "max_temp", "temp": 31.5}, {"DayOfYear": 16, "temp_type": "max_temp", "temp": 31.8}, {"DayOfYear": 17, "temp_type": "max_temp", "temp": 31.7}, {"DayOfYear": 18, "temp_type": "max_temp", "temp": 31.6}, {"DayOfYear": 19, "temp_type": "max_temp", "temp": 31.6}, {"DayOfYear": 20, "temp_type": "max_temp", "temp": 31.3}, {"DayOfYear": 21, "temp_type": "max_temp", "temp": 31.3}, {"DayOfYear": 22, "temp_type": "max_temp", "temp": 31.4}, {"DayOfYear": 23, "temp_type": "max_temp", "temp": 31.6}, {"DayOfYear": 24, "temp_type": "max_temp", "temp": 31.9}, {"DayOfYear": 25, "temp_type": "max_temp", "temp": 32.2}, {"DayOfYear": 26, "temp_type": "max_temp", "temp": 32.7}, {"DayOfYear": 27, "temp_type": "max_temp", "temp": 32.9}, {"DayOfYear": 28, "temp_type": "max_temp", "temp": 33.2}, {"DayOfYear": 29, "temp_type": "max_temp", "temp": 33.5}, {"DayOfYear": 30, "temp_type": "max_temp", "temp": 33.5}, {"DayOfYear": 31, "temp_type": "max_temp", "temp": 33.4}, {"DayOfYear": 32, "temp_type": "max_temp", "temp": 33.6}, {"DayOfYear": 33, "temp_type": "max_temp", "temp": 34.0}, {"DayOfYear": 34, "temp_type": "max_temp", "temp": 34.4}, {"DayOfYear": 35, "temp_type": "max_temp", "temp": 34.5}, {"DayOfYear": 36, "temp_type": "max_temp", "temp": 34.3}, {"DayOfYear": 37, "temp_type": "max_temp", "temp": 34.2}, {"DayOfYear": 38, "temp_type": "max_temp", "temp": 34.2}, {"DayOfYear": 39, "temp_type": "max_temp", "temp": 34.4}, {"DayOfYear": 40, "temp_type": "max_temp", "temp": 34.6}, {"DayOfYear": 41, "temp_type": "max_temp", "temp": 34.6}, {"DayOfYear": 42, "temp_type": "max_temp", "temp": 34.8}, {"DayOfYear": 43, "temp_type": "max_temp", "temp": 35.4}, {"DayOfYear": 44, "temp_type": "max_temp", "temp": 36.1}, {"DayOfYear": 45, "temp_type": "max_temp", "temp": 36.5}, {"DayOfYear": 46, "temp_type": "max_temp", "temp": 37.1}, {"DayOfYear": 47, "temp_type": "max_temp", "temp": 37.5}, {"DayOfYear": 48, "temp_type": "max_temp", "temp": 37.7}, {"DayOfYear": 49, "temp_type": "max_temp", "temp": 37.8}, {"DayOfYear": 50, "temp_type": "max_temp", "temp": 38.0}, {"DayOfYear": 51, "temp_type": "max_temp", "temp": 38.5}, {"DayOfYear": 52, "temp_type": "max_temp", "temp": 39.0}, {"DayOfYear": 53, "temp_type": "max_temp", "temp": 39.3}, {"DayOfYear": 54, "temp_type": "max_temp", "temp": 39.5}, {"DayOfYear": 55, "temp_type": "max_temp", "temp": 39.6}, {"DayOfYear": 56, "temp_type": "max_temp", "temp": 39.8}, {"DayOfYear": 57, "temp_type": "max_temp", "temp": 40.1}, {"DayOfYear": 58, "temp_type": "max_temp", "temp": 40.2}, {"DayOfYear": 59, "temp_type": "max_temp", "temp": 40.4}, {"DayOfYear": 61, "temp_type": "max_temp", "temp": 40.5}, {"DayOfYear": 62, "temp_type": "max_temp", "temp": 40.5}, {"DayOfYear": 63, "temp_type": "max_temp", "temp": 40.6}, {"DayOfYear": 64, "temp_type": "max_temp", "temp": 40.9}, {"DayOfYear": 65, "temp_type": "max_temp", "temp": 41.3}, {"DayOfYear": 66, "temp_type": "max_temp", "temp": 42.0}, {"DayOfYear": 67, "temp_type": "max_temp", "temp": 42.6}, {"DayOfYear": 68, "temp_type": "max_temp", "temp": 43.2}, {"DayOfYear": 69, "temp_type": "max_temp", "temp": 43.3}, {"DayOfYear": 70, "temp_type": "max_temp", "temp": 43.6}, {"DayOfYear": 71, "temp_type": "max_temp", "temp": 44.1}, {"DayOfYear": 72, "temp_type": "max_temp", "temp": 44.5}, {"DayOfYear": 73, "temp_type": "max_temp", "temp": 44.7}, {"DayOfYear": 74, "temp_type": "max_temp", "temp": 44.8}, {"DayOfYear": 75, "temp_type": "max_temp", "temp": 44.8}, {"DayOfYear": 76, "temp_type": "max_temp", "temp": 45.1}, {"DayOfYear": 77, "temp_type": "max_temp", "temp": 45.7}, {"DayOfYear": 78, "temp_type": "max_temp", "temp": 46.4}, {"DayOfYear": 79, "temp_type": "max_temp", "temp": 47.2}, {"DayOfYear": 80, "temp_type": "max_temp", "temp": 47.7}, {"DayOfYear": 81, "temp_type": "max_temp", "temp": 48.3}, {"DayOfYear": 82, "temp_type": "max_temp", "temp": 48.9}, {"DayOfYear": 83, "temp_type": "max_temp", "temp": 49.4}, {"DayOfYear": 84, "temp_type": "max_temp", "temp": 50.1}, {"DayOfYear": 85, "temp_type": "max_temp", "temp": 50.8}, {"DayOfYear": 86, "temp_type": "max_temp", "temp": 51.4}, {"DayOfYear": 87, "temp_type": "max_temp", "temp": 52.0}, {"DayOfYear": 88, "temp_type": "max_temp", "temp": 52.4}, {"DayOfYear": 89, "temp_type": "max_temp", "temp": 53.1}, {"DayOfYear": 90, "temp_type": "max_temp", "temp": 53.8}, {"DayOfYear": 91, "temp_type": "max_temp", "temp": 54.2}, {"DayOfYear": 92, "temp_type": "max_temp", "temp": 54.5}, {"DayOfYear": 93, "temp_type": "max_temp", "temp": 54.5}, {"DayOfYear": 94, "temp_type": "max_temp", "temp": 54.6}, {"DayOfYear": 95, "temp_type": "max_temp", "temp": 55.0}, {"DayOfYear": 96, "temp_type": "max_temp", "temp": 55.2}, {"DayOfYear": 97, "temp_type": "max_temp", "temp": 55.2}, {"DayOfYear": 98, "temp_type": "max_temp", "temp": 55.5}, {"DayOfYear": 99, "temp_type": "max_temp", "temp": 55.8}, {"DayOfYear": 100, "temp_type": "max_temp", "temp": 56.2}, {"DayOfYear": 101, "temp_type": "max_temp", "temp": 56.3}, {"DayOfYear": 102, "temp_type": "max_temp", "temp": 56.6}, {"DayOfYear": 103, "temp_type": "max_temp", "temp": 57.4}, {"DayOfYear": 104, "temp_type": "max_temp", "temp": 57.9}, {"DayOfYear": 105, "temp_type": "max_temp", "temp": 58.4}, {"DayOfYear": 106, "temp_type": "max_temp", "temp": 58.7}, {"DayOfYear": 107, "temp_type": "max_temp", "temp": 59.1}, {"DayOfYear": 108, "temp_type": "max_temp", "temp": 59.5}, {"DayOfYear": 109, "temp_type": "max_temp", "temp": 60.2}, {"DayOfYear": 110, "temp_type": "max_temp", "temp": 60.6}, {"DayOfYear": 111, "temp_type": "max_temp", "temp": 61.1}, {"DayOfYear": 112, "temp_type": "max_temp", "temp": 61.5}, {"DayOfYear": 113, "temp_type": "max_temp", "temp": 61.9}, {"DayOfYear": 114, "temp_type": "max_temp", "temp": 62.3}, {"DayOfYear": 115, "temp_type": "max_temp", "temp": 62.6}, {"DayOfYear": 116, "temp_type": "max_temp", "temp": 62.9}, {"DayOfYear": 117, "temp_type": "max_temp", "temp": 63.0}, {"DayOfYear": 118, "temp_type": "max_temp", "temp": 63.0}, {"DayOfYear": 119, "temp_type": "max_temp", "temp": 63.2}, {"DayOfYear": 120, "temp_type": "max_temp", "temp": 63.7}, {"DayOfYear": 121, "temp_type": "max_temp", "temp": 64.1}, {"DayOfYear": 122, "temp_type": "max_temp", "temp": 64.4}, {"DayOfYear": 123, "temp_type": "max_temp", "temp": 64.9}, {"DayOfYear": 124, "temp_type": "max_temp", "temp": 65.3}, {"DayOfYear": 125, "temp_type": "max_temp", "temp": 65.5}, {"DayOfYear": 126, "temp_type": "max_temp", "temp": 65.6}, {"DayOfYear": 127, "temp_type": "max_temp", "temp": 65.9}, {"DayOfYear": 128, "temp_type": "max_temp", "temp": 66.2}, {"DayOfYear": 129, "temp_type": "max_temp", "temp": 66.3}, {"DayOfYear": 130, "temp_type": "max_temp", "temp": 66.4}, {"DayOfYear": 131, "temp_type": "max_temp", "temp": 66.8}, {"DayOfYear": 132, "temp_type": "max_temp", "temp": 67.0}, {"DayOfYear": 133, "temp_type": "max_temp", "temp": 67.3}, {"DayOfYear": 134, "temp_type": "max_temp", "temp": 67.5}, {"DayOfYear": 135, "temp_type": "max_temp", "temp": 67.5}, {"DayOfYear": 136, "temp_type": "max_temp", "temp": 67.9}, {"DayOfYear": 137, "temp_type": "max_temp", "temp": 68.3}, {"DayOfYear": 138, "temp_type": "max_temp", "temp": 68.6}, {"DayOfYear": 139, "temp_type": "max_temp", "temp": 68.7}, {"DayOfYear": 140, "temp_type": "max_temp", "temp": 68.9}, {"DayOfYear": 141, "temp_type": "max_temp", "temp": 69.2}, {"DayOfYear": 142, "temp_type": "max_temp", "temp": 69.5}, {"DayOfYear": 143, "temp_type": "max_temp", "temp": 69.7}, {"DayOfYear": 144, "temp_type": "max_temp", "temp": 70.2}, {"DayOfYear": 145, "temp_type": "max_temp", "temp": 70.8}, {"DayOfYear": 146, "temp_type": "max_temp", "temp": 71.2}, {"DayOfYear": 147, "temp_type": "max_temp", "temp": 71.6}, {"DayOfYear": 148, "temp_type": "max_temp", "temp": 71.6}, {"DayOfYear": 149, "temp_type": "max_temp", "temp": 71.7}, {"DayOfYear": 150, "temp_type": "max_temp", "temp": 72.0}, {"DayOfYear": 151, "temp_type": "max_temp", "temp": 72.1}, {"DayOfYear": 152, "temp_type": "max_temp", "temp": 72.4}, {"DayOfYear": 153, "temp_type": "max_temp", "temp": 72.9}, {"DayOfYear": 154, "temp_type": "max_temp", "temp": 73.4}, {"DayOfYear": 155, "temp_type": "max_temp", "temp": 73.8}, {"DayOfYear": 156, "temp_type": "max_temp", "temp": 74.2}, {"DayOfYear": 157, "temp_type": "max_temp", "temp": 74.6}, {"DayOfYear": 158, "temp_type": "max_temp", "temp": 75.0}, {"DayOfYear": 159, "temp_type": "max_temp", "temp": 75.3}, {"DayOfYear": 160, "temp_type": "max_temp", "temp": 75.5}, {"DayOfYear": 161, "temp_type": "max_temp", "temp": 75.8}, {"DayOfYear": 162, "temp_type": "max_temp", "temp": 76.1}, {"DayOfYear": 163, "temp_type": "max_temp", "temp": 76.8}, {"DayOfYear": 164, "temp_type": "max_temp", "temp": 77.3}, {"DayOfYear": 165, "temp_type": "max_temp", "temp": 77.7}, {"DayOfYear": 166, "temp_type": "max_temp", "temp": 77.9}, {"DayOfYear": 167, "temp_type": "max_temp", "temp": 78.1}, {"DayOfYear": 168, "temp_type": "max_temp", "temp": 78.1}, {"DayOfYear": 169, "temp_type": "max_temp", "temp": 78.3}, {"DayOfYear": 170, "temp_type": "max_temp", "temp": 78.5}, {"DayOfYear": 171, "temp_type": "max_temp", "temp": 78.6}, {"DayOfYear": 172, "temp_type": "max_temp", "temp": 78.6}, {"DayOfYear": 173, "temp_type": "max_temp", "temp": 78.7}, {"DayOfYear": 174, "temp_type": "max_temp", "temp": 78.5}, {"DayOfYear": 175, "temp_type": "max_temp", "temp": 78.4}, {"DayOfYear": 176, "temp_type": "max_temp", "temp": 78.3}, {"DayOfYear": 177, "temp_type": "max_temp", "temp": 78.3}, {"DayOfYear": 178, "temp_type": "max_temp", "temp": 78.4}, {"DayOfYear": 179, "temp_type": "max_temp", "temp": 78.5}, {"DayOfYear": 180, "temp_type": "max_temp", "temp": 78.6}, {"DayOfYear": 181, "temp_type": "max_temp", "temp": 78.8}, {"DayOfYear": 182, "temp_type": "max_temp", "temp": 78.9}, {"DayOfYear": 183, "temp_type": "max_temp", "temp": 79.3}, {"DayOfYear": 184, "temp_type": "max_temp", "temp": 79.3}, {"DayOfYear": 185, "temp_type": "max_temp", "temp": 79.3}, {"DayOfYear": 186, "temp_type": "max_temp", "temp": 79.3}, {"DayOfYear": 187, "temp_type": "max_temp", "temp": 79.5}, {"DayOfYear": 188, "temp_type": "max_temp", "temp": 79.6}, {"DayOfYear": 189, "temp_type": "max_temp", "temp": 79.8}, {"DayOfYear": 190, "temp_type": "max_temp", "temp": 80.2}, {"DayOfYear": 191, "temp_type": "max_temp", "temp": 80.6}, {"DayOfYear": 192, "temp_type": "max_temp", "temp": 80.8}, {"DayOfYear": 193, "temp_type": "max_temp", "temp": 81.1}, {"DayOfYear": 194, "temp_type": "max_temp", "temp": 81.1}, {"DayOfYear": 195, "temp_type": "max_temp", "temp": 81.2}, {"DayOfYear": 196, "temp_type": "max_temp", "temp": 81.2}, {"DayOfYear": 197, "temp_type": "max_temp", "temp": 81.1}, {"DayOfYear": 198, "temp_type": "max_temp", "temp": 80.9}, {"DayOfYear": 199, "temp_type": "max_temp", "temp": 80.9}, {"DayOfYear": 200, "temp_type": "max_temp", "temp": 81.1}, {"DayOfYear": 201, "temp_type": "max_temp", "temp": 81.1}, {"DayOfYear": 202, "temp_type": "max_temp", "temp": 81.1}, {"DayOfYear": 203, "temp_type": "max_temp", "temp": 81.1}, {"DayOfYear": 204, "temp_type": "max_temp", "temp": 81.0}, {"DayOfYear": 205, "temp_type": "max_temp", "temp": 80.9}, {"DayOfYear": 206, "temp_type": "max_temp", "temp": 80.8}, {"DayOfYear": 207, "temp_type": "max_temp", "temp": 80.8}, {"DayOfYear": 208, "temp_type": "max_temp", "temp": 80.8}, {"DayOfYear": 209, "temp_type": "max_temp", "temp": 80.9}, {"DayOfYear": 210, "temp_type": "max_temp", "temp": 80.9}, {"DayOfYear": 211, "temp_type": "max_temp", "temp": 80.8}, {"DayOfYear": 212, "temp_type": "max_temp", "temp": 80.7}, {"DayOfYear": 213, "temp_type": "max_temp", "temp": 80.8}, {"DayOfYear": 214, "temp_type": "max_temp", "temp": 80.7}, {"DayOfYear": 215, "temp_type": "max_temp", "temp": 80.6}, {"DayOfYear": 216, "temp_type": "max_temp", "temp": 80.6}, {"DayOfYear": 217, "temp_type": "max_temp", "temp": 80.5}, {"DayOfYear": 218, "temp_type": "max_temp", "temp": 80.4}, {"DayOfYear": 219, "temp_type": "max_temp", "temp": 80.4}, {"DayOfYear": 220, "temp_type": "max_temp", "temp": 80.4}, {"DayOfYear": 221, "temp_type": "max_temp", "temp": 80.4}, {"DayOfYear": 222, "temp_type": "max_temp", "temp": 80.3}, {"DayOfYear": 223, "temp_type": "max_temp", "temp": 80.1}, {"DayOfYear": 224, "temp_type": "max_temp", "temp": 79.9}, {"DayOfYear": 225, "temp_type": "max_temp", "temp": 79.7}, {"DayOfYear": 226, "temp_type": "max_temp", "temp": 79.7}, {"DayOfYear": 227, "temp_type": "max_temp", "temp": 79.5}, {"DayOfYear": 228, "temp_type": "max_temp", "temp": 79.4}, {"DayOfYear": 229, "temp_type": "max_temp", "temp": 79.2}, {"DayOfYear": 230, "temp_type": "max_temp", "temp": 79.1}, {"DayOfYear": 231, "temp_type": "max_temp", "temp": 79.0}, {"DayOfYear": 232, "temp_type": "max_temp", "temp": 79.1}, {"DayOfYear": 233, "temp_type": "max_temp", "temp": 79.2}, {"DayOfYear": 234, "temp_type": "max_temp", "temp": 79.0}, {"DayOfYear": 235, "temp_type": "max_temp", "temp": 78.8}, {"DayOfYear": 236, "temp_type": "max_temp", "temp": 78.6}, {"DayOfYear": 237, "temp_type": "max_temp", "temp": 78.3}, {"DayOfYear": 238, "temp_type": "max_temp", "temp": 78.1}, {"DayOfYear": 239, "temp_type": "max_temp", "temp": 78.0}, {"DayOfYear": 240, "temp_type": "max_temp", "temp": 78.0}, {"DayOfYear": 241, "temp_type": "max_temp", "temp": 77.9}, {"DayOfYear": 242, "temp_type": "max_temp", "temp": 77.8}, {"DayOfYear": 243, "temp_type": "max_temp", "temp": 77.6}, {"DayOfYear": 244, "temp_type": "max_temp", "temp": 77.5}, {"DayOfYear": 245, "temp_type": "max_temp", "temp": 77.5}, {"DayOfYear": 246, "temp_type": "max_temp", "temp": 77.3}, {"DayOfYear": 247, "temp_type": "max_temp", "temp": 77.0}, {"DayOfYear": 248, "temp_type": "max_temp", "temp": 76.7}, {"DayOfYear": 249, "temp_type": "max_temp", "temp": 76.4}, {"DayOfYear": 250, "temp_type": "max_temp", "temp": 76.3}, {"DayOfYear": 251, "temp_type": "max_temp", "temp": 76.2}, {"DayOfYear": 252, "temp_type": "max_temp", "temp": 75.8}, {"DayOfYear": 253, "temp_type": "max_temp", "temp": 75.4}, {"DayOfYear": 254, "temp_type": "max_temp", "temp": 74.8}, {"DayOfYear": 255, "temp_type": "max_temp", "temp": 74.4}, {"DayOfYear": 256, "temp_type": "max_temp", "temp": 74.2}, {"DayOfYear": 257, "temp_type": "max_temp", "temp": 74.0}, {"DayOfYear": 258, "temp_type": "max_temp", "temp": 73.6}, {"DayOfYear": 259, "temp_type": "max_temp", "temp": 73.1}, {"DayOfYear": 260, "temp_type": "max_temp", "temp": 72.5}, {"DayOfYear": 261, "temp_type": "max_temp", "temp": 72.0}, {"DayOfYear": 262, "temp_type": "max_temp", "temp": 71.4}, {"DayOfYear": 263, "temp_type": "max_temp", "temp": 70.9}, {"DayOfYear": 264, "temp_type": "max_temp", "temp": 70.5}, {"DayOfYear": 265, "temp_type": "max_temp", "temp": 69.8}, {"DayOfYear": 266, "temp_type": "max_temp", "temp": 69.2}, {"DayOfYear": 267, "temp_type": "max_temp", "temp": 68.9}, {"DayOfYear": 268, "temp_type": "max_temp", "temp": 68.7}, {"DayOfYear": 269, "temp_type": "max_temp", "temp": 68.4}, {"DayOfYear": 270, "temp_type": "max_temp", "temp": 68.0}, {"DayOfYear": 271, "temp_type": "max_temp", "temp": 67.5}, {"DayOfYear": 272, "temp_type": "max_temp", "temp": 66.9}, {"DayOfYear": 273, "temp_type": "max_temp", "temp": 66.5}, {"DayOfYear": 274, "temp_type": "max_temp", "temp": 66.2}, {"DayOfYear": 275, "temp_type": "max_temp", "temp": 66.0}, {"DayOfYear": 276, "temp_type": "max_temp", "temp": 65.7}, {"DayOfYear": 277, "temp_type": "max_temp", "temp": 65.4}, {"DayOfYear": 278, "temp_type": "max_temp", "temp": 64.9}, {"DayOfYear": 279, "temp_type": "max_temp", "temp": 64.6}, {"DayOfYear": 280, "temp_type": "max_temp", "temp": 64.5}, {"DayOfYear": 281, "temp_type": "max_temp", "temp": 64.1}, {"DayOfYear": 282, "temp_type": "max_temp", "temp": 63.8}, {"DayOfYear": 283, "temp_type": "max_temp", "temp": 63.3}, {"DayOfYear": 284, "temp_type": "max_temp", "temp": 62.9}, {"DayOfYear": 285, "temp_type": "max_temp", "temp": 62.4}, {"DayOfYear": 286, "temp_type": "max_temp", "temp": 62.0}, {"DayOfYear": 287, "temp_type": "max_temp", "temp": 61.6}, {"DayOfYear": 288, "temp_type": "max_temp", "temp": 61.1}, {"DayOfYear": 289, "temp_type": "max_temp", "temp": 60.6}, {"DayOfYear": 290, "temp_type": "max_temp", "temp": 60.2}, {"DayOfYear": 291, "temp_type": "max_temp", "temp": 59.8}, {"DayOfYear": 292, "temp_type": "max_temp", "temp": 59.3}, {"DayOfYear": 293, "temp_type": "max_temp", "temp": 59.2}, {"DayOfYear": 294, "temp_type": "max_temp", "temp": 58.8}, {"DayOfYear": 295, "temp_type": "max_temp", "temp": 58.2}, {"DayOfYear": 296, "temp_type": "max_temp", "temp": 57.8}, {"DayOfYear": 297, "temp_type": "max_temp", "temp": 57.6}, {"DayOfYear": 298, "temp_type": "max_temp", "temp": 57.5}, {"DayOfYear": 299, "temp_type": "max_temp", "temp": 57.4}, {"DayOfYear": 300, "temp_type": "max_temp", "temp": 57.2}, {"DayOfYear": 301, "temp_type": "max_temp", "temp": 56.9}, {"DayOfYear": 302, "temp_type": "max_temp", "temp": 56.6}, {"DayOfYear": 303, "temp_type": "max_temp", "temp": 56.2}, {"DayOfYear": 304, "temp_type": "max_temp", "temp": 55.7}, {"DayOfYear": 305, "temp_type": "max_temp", "temp": 55.2}, {"DayOfYear": 306, "temp_type": "max_temp", "temp": 54.8}, {"DayOfYear": 307, "temp_type": "max_temp", "temp": 54.5}, {"DayOfYear": 308, "temp_type": "max_temp", "temp": 54.0}, {"DayOfYear": 309, "temp_type": "max_temp", "temp": 53.4}, {"DayOfYear": 310, "temp_type": "max_temp", "temp": 52.9}, {"DayOfYear": 311, "temp_type": "max_temp", "temp": 52.4}, {"DayOfYear": 312, "temp_type": "max_temp", "temp": 52.0}, {"DayOfYear": 313, "temp_type": "max_temp", "temp": 51.4}, {"DayOfYear": 314, "temp_type": "max_temp", "temp": 50.6}, {"DayOfYear": 315, "temp_type": "max_temp", "temp": 49.9}, {"DayOfYear": 316, "temp_type": "max_temp", "temp": 49.4}, {"DayOfYear": 317, "temp_type": "max_temp", "temp": 49.2}, {"DayOfYear": 318, "temp_type": "max_temp", "temp": 48.9}, {"DayOfYear": 319, "temp_type": "max_temp", "temp": 48.7}, {"DayOfYear": 320, "temp_type": "max_temp", "temp": 48.4}, {"DayOfYear": 321, "temp_type": "max_temp", "temp": 48.1}, {"DayOfYear": 322, "temp_type": "max_temp", "temp": 47.6}, {"DayOfYear": 323, "temp_type": "max_temp", "temp": 47.2}, {"DayOfYear": 324, "temp_type": "max_temp", "temp": 47.2}, {"DayOfYear": 325, "temp_type": "max_temp", "temp": 47.2}, {"DayOfYear": 326, "temp_type": "max_temp", "temp": 46.9}, {"DayOfYear": 327, "temp_type": "max_temp", "temp": 46.4}, {"DayOfYear": 328, "temp_type": "max_temp", "temp": 46.1}, {"DayOfYear": 329, "temp_type": "max_temp", "temp": 45.7}, {"DayOfYear": 330, "temp_type": "max_temp", "temp": 45.4}, {"DayOfYear": 331, "temp_type": "max_temp", "temp": 45.1}, {"DayOfYear": 332, "temp_type": "max_temp", "temp": 44.4}, {"DayOfYear": 333, "temp_type": "max_temp", "temp": 43.8}, {"DayOfYear": 334, "temp_type": "max_temp", "temp": 43.2}, {"DayOfYear": 335, "temp_type": "max_temp", "temp": 42.6}, {"DayOfYear": 336, "temp_type": "max_temp", "temp": 42.0}, {"DayOfYear": 337, "temp_type": "max_temp", "temp": 41.6}, {"DayOfYear": 338, "temp_type": "max_temp", "temp": 41.1}, {"DayOfYear": 339, "temp_type": "max_temp", "temp": 40.5}, {"DayOfYear": 340, "temp_type": "max_temp", "temp": 39.8}, {"DayOfYear": 341, "temp_type": "max_temp", "temp": 39.3}, {"DayOfYear": 342, "temp_type": "max_temp", "temp": 39.0}, {"DayOfYear": 343, "temp_type": "max_temp", "temp": 38.6}, {"DayOfYear": 344, "temp_type": "max_temp", "temp": 38.2}, {"DayOfYear": 345, "temp_type": "max_temp", "temp": 37.9}, {"DayOfYear": 346, "temp_type": "max_temp", "temp": 37.4}, {"DayOfYear": 347, "temp_type": "max_temp", "temp": 37.1}, {"DayOfYear": 348, "temp_type": "max_temp", "temp": 36.8}, {"DayOfYear": 349, "temp_type": "max_temp", "temp": 36.7}, {"DayOfYear": 350, "temp_type": "max_temp", "temp": 36.5}, {"DayOfYear": 351, "temp_type": "max_temp", "temp": 36.5}, {"DayOfYear": 352, "temp_type": "max_temp", "temp": 36.1}, {"DayOfYear": 353, "temp_type": "max_temp", "temp": 35.6}, {"DayOfYear": 354, "temp_type": "max_temp", "temp": 35.1}, {"DayOfYear": 355, "temp_type": "max_temp", "temp": 34.9}, {"DayOfYear": 356, "temp_type": "max_temp", "temp": 35.0}, {"DayOfYear": 357, "temp_type": "max_temp", "temp": 34.8}, {"DayOfYear": 358, "temp_type": "max_temp", "temp": 34.5}, {"DayOfYear": 359, "temp_type": "max_temp", "temp": 34.7}, {"DayOfYear": 360, "temp_type": "max_temp", "temp": 34.7}, {"DayOfYear": 361, "temp_type": "max_temp", "temp": 34.9}, {"DayOfYear": 362, "temp_type": "max_temp", "temp": 35.0}, {"DayOfYear": 363, "temp_type": "max_temp", "temp": 35.2}, {"DayOfYear": 364, "temp_type": "max_temp", "temp": 35.1}, {"DayOfYear": 365, "temp_type": "max_temp", "temp": 35.0}, {"DayOfYear": 366, "temp_type": "max_temp", "temp": 34.8}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+</div>
+</section>
+<section id="daily-wind-speeds---hourly-trends" class="slide level2">
+<h2>Daily Wind Speeds - Hourly Trends</h2>
+<div id="37e6d488" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display" data-execution_count="4">
+
+<style>
+  #altair-viz-0a897e93718243829ad00864a7196d11.vega-embed {
+    width: 100%;
+    display: flex;
+  }
+
+  #altair-viz-0a897e93718243829ad00864a7196d11.vega-embed details,
+  #altair-viz-0a897e93718243829ad00864a7196d11.vega-embed details summary {
+    position: relative;
+  }
+</style>
+<div id="altair-viz-0a897e93718243829ad00864a7196d11"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-0a897e93718243829ad00864a7196d11") {
+      outputDiv = document.getElementById("altair-viz-0a897e93718243829ad00864a7196d11");
+    }
+
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm/vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm/vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm/vega-lite@5.20.1?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      let deps = ["vega-embed"];
+      require(deps, displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "5.20.1"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-4d7e29d900f2fe5a1e6aaafc531e0dd6"}, "mark": {"type": "area", "color": {"gradient": "linear", "stops": [{"color": "lightblue", "offset": 0}, {"color": "steelblue", "offset": 1}], "x1": 1, "y1": 1, "x2": 1, "y2": 0}, "line": {"color": "steelblue", "strokeWidth": 2}}, "encoding": {"x": {"field": "Hour", "title": "Hour of Day", "type": "ordinal"}, "y": {"field": "HLY-WIND-AVGSPD", "title": "Average Wind Speed (mph)", "type": "quantitative"}}, "height": 300, "title": "Average Wind Speed by Hour (1981-2010)", "width": 500, "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-4d7e29d900f2fe5a1e6aaafc531e0dd6": [{"Hour": 0, "HLY-WIND-AVGSPD": 6.541643835616438}, {"Hour": 1, "HLY-WIND-AVGSPD": 6.1528767123287675}, {"Hour": 2, "HLY-WIND-AVGSPD": 6.056164383561644}, {"Hour": 3, "HLY-WIND-AVGSPD": 5.984383561643837}, {"Hour": 4, "HLY-WIND-AVGSPD": 6.021369863013699}, {"Hour": 5, "HLY-WIND-AVGSPD": 6.005479452054795}, {"Hour": 6, "HLY-WIND-AVGSPD": 6.097808219178082}, {"Hour": 7, "HLY-WIND-AVGSPD": 6.521917808219178}, {"Hour": 8, "HLY-WIND-AVGSPD": 7.53013698630137}, {"Hour": 9, "HLY-WIND-AVGSPD": 8.515890410958905}, {"Hour": 10, "HLY-WIND-AVGSPD": 9.372328767123287}, {"Hour": 11, "HLY-WIND-AVGSPD": 9.94054794520548}, {"Hour": 12, "HLY-WIND-AVGSPD": 10.393972602739726}, {"Hour": 13, "HLY-WIND-AVGSPD": 10.724931506849314}, {"Hour": 14, "HLY-WIND-AVGSPD": 10.838630136986302}, {"Hour": 15, "HLY-WIND-AVGSPD": 10.845753424657534}, {"Hour": 16, "HLY-WIND-AVGSPD": 10.697260273972603}, {"Hour": 17, "HLY-WIND-AVGSPD": 10.07095890410959}, {"Hour": 18, "HLY-WIND-AVGSPD": 9.132054794520547}, {"Hour": 19, "HLY-WIND-AVGSPD": 8.215342465753425}, {"Hour": 20, "HLY-WIND-AVGSPD": 7.693424657534246}, {"Hour": 21, "HLY-WIND-AVGSPD": 7.33972602739726}, {"Hour": 22, "HLY-WIND-AVGSPD": 6.907671232876713}, {"Hour": 23, "HLY-WIND-AVGSPD": 6.558630136986301}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+</div>
+</section>
+<section id="key-questions-for-dashboard" class="slide level2">
+<h2>Key Questions for Dashboard</h2>
+<ul>
+<li><strong>How do all three relate (Wind, Temperature, Clouds)?</strong><br>
+</li>
+<li><strong>How does Pressure and DewPoint affect the other 3?</strong><br>
+</li>
+<li><strong>Are there any interesting seasonal patterns?</strong></li>
+</ul>
+
+</section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="Weather_project_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="Weather_project_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="Weather_project_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="Weather_project_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="Weather_project_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="Weather_project_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="Weather_project_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="Weather_project_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="Weather_project_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="Weather_project_files/libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: false,
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'none',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1050,
+
+        height: 700,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>
