@@ -48,7 +48,7 @@ print("\nKey column categories:")
 print("- Station info: STATION, DATE, LATITUDE, LONGITUDE, ELEVATION, NAME")
 print("- Weather variables: Cloud, DewPoint, Pressure, Temperature, Wind")
 
-summary = df_clean[["Cloud", "DewPoint", "Pressure", "Temperature", "Wind"]].describe().round(2).reset_index(names="Statistic")
+summary = df_clean[["Cloud (% Clear)", "DewPoint (°F)", "Pressure (hPa)", "Temperature (°F)", "Wind (MPH)"]].describe().round(2).reset_index(names="Statistic")
 
 table = GT(
         summary,
