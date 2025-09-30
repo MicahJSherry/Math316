@@ -27,13 +27,19 @@ df_clean = df.loc[:, ~df.columns.str.contains("_ATTRIBUTES")]
 
 # Rename key variables
 rename_map = {
-    "HLY-CLOD-PCTCLR": "Cloud",
-    "HLY-DEWP-NORMAL": "DewPoint",
-    "HLY-PRES-NORMAL": "Pressure",
-    "HLY-TEMP-NORMAL": "Temperature",
-    "HLY-WIND-VCTSPD": "Wind"
+    "HLY-CLOD-PCTCLR": "Cloud (% Clear)",
+    "HLY-DEWP-NORMAL": "DewPoint (°F)",
+    "HLY-PRES-NORMAL": "Pressure (hPa)",
+    "HLY-TEMP-NORMAL": "Temperature (°F)",
+    "HLY-WIND-AVGSPD": "Wind (MPH)"
 }
 df_clean = df_clean.rename(columns=rename_map)
+
+# Unit conversion - divide by 10 to get correct values
+conversion_columns = ["Cloud (% Clear)", "DewPoint (°F)", "Pressure (hPa)", "Temperature (°F)", "Wind (MPH)"]
+for col in conversion_columns:
+    if col in df_clean.columns:
+        df_clean[col] = df_clean[col] / 10.0
 
 rows, cols = df_clean.shape
 print(f"Dataset contains {rows:,} rows and {cols} columns (after dropping attributes)")
@@ -48,7 +54,7 @@ table = GT(
         summary,
         rowname_col="Statistic" 
     ).tab_header(
-        title=md("Average Weather summary Over (1985-2025)")
+        title=md("Average Weather summary Over (1981-2025)")
     ).tab_options(
         table_width = "700px")
 table
