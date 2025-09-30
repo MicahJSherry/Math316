@@ -54,7 +54,6 @@ table = GT(
 table
 
 ```
-
 ---
 
 ## Cloud Cover – Monthly Trends
@@ -85,8 +84,9 @@ chart = alt.Chart(cloud_long).mark_line(point=True).encode(
 
 chart
 ```
---- 
-### Average Temperature – daily Trends
+---
+
+## Average Temperature – daily Trends
 ```{python}
 temp_col = "HLY-TEMP-NORMAL"
 
@@ -114,8 +114,8 @@ chart
 
 
 ```
-
 ---
+
 ## Daily Wind Speeds - Hourly Trends
 
 ```{python}
@@ -158,7 +158,6 @@ hourly_chart = alt.Chart(hourly_wind).mark_area(
 hourly_chart
 
 ```
-
 ---
 
 ## Key Questions for Dashboard
