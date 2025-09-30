@@ -54,7 +54,7 @@ table = GT(
         summary,
         rowname_col="Statistic" 
     ).tab_header(
-        title=md("Average Weather summary Over (1981-2025)")
+        title=md("Pittsburgh Hourly Weather Observations(1981-2010)")
     ).tab_options(
         table_width = "700px")
 table
