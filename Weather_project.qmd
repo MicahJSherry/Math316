@@ -150,8 +150,8 @@ hourly_chart = alt.Chart(hourly_wind).mark_area(
     x=alt.X('Hour:O', title='Hour of Day'),
     y=alt.Y('HLY-WIND-AVGSPD:Q', title='Average Wind Speed (mph)')
 ).properties(
-    width=500,
-    height=300,
+    width=700,
+    height=500,
     title='Average Wind Speed by Hour (1981-2010)'
 )
 
