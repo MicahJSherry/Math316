@@ -116,6 +116,50 @@ chart
 ```
 
 ---
+## Daily Wind Speeds - Hourly Trends
+
+```{python}
+df = pd.read_csv("Pittsburgh_hourly_normals_1981_2010.csv")
+
+# Add date and season columns
+df['DATE'] = pd.to_datetime('2000-' + df['DATE'].astype(str))
+df['Month'] = df['DATE'].dt.month
+df['Hour'] = df['DATE'].dt.hour
+df['Season'] = df['Month'].map({12: 'Winter', 1: 'Winter', 2: 'Winter',
+                                3: 'Spring', 4: 'Spring', 5: 'Spring',
+                                6: 'Summer', 7: 'Summer', 8: 'Summer',
+                                9: 'Fall', 10: 'Fall', 11: 'Fall'})
+
+speed_columns = ['HLY-WIND-AVGSPD', 'HLY-WIND-VCTSPD']
+for col in speed_columns:
+    df[col] = df[col] / 10.0
+
+# Finding hourly wind speed patterns
+hourly_wind = df.groupby('Hour')['HLY-WIND-AVGSPD'].mean().reset_index()
+
+# Creating hourly wind speed chart
+hourly_chart = alt.Chart(hourly_wind).mark_area(
+    line={'color': 'steelblue', 'strokeWidth': 2},
+    color=alt.Gradient(
+        gradient='linear',
+        stops=[alt.GradientStop(color='lightblue', offset=0),
+               alt.GradientStop(color='steelblue', offset=1)],
+        x1=1, y1=1, x2=1, y2=0
+    )
+).encode(
+    x=alt.X('Hour:O', title='Hour of Day'),
+    y=alt.Y('HLY-WIND-AVGSPD:Q', title='Average Wind Speed (mph)')
+).properties(
+    width=500,
+    height=300,
+    title='Average Wind Speed by Hour (1981-2010)'
+)
+
+hourly_chart
+
+```
+
+---
 
 ## Key Questions for Dashboard
 
