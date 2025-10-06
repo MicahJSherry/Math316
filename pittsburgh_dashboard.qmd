@@ -1,0 +1,83 @@
+---
+title: "Pittsburgh Dashboard - Phase 2"
+format:
+  dashboard:
+    theme: yeti
+    pages: true
+    orientation: columns
+    embed-resources: true
+    standalone: true
+---
+
+
+<!--Page 1-->
+
+# Overview
+
+This is just a home tab.
+
+::: {.panel-tabset}
+
+## Example
+
+```{python}
+import pandas as pd
+print("placeholder code.")
+```
+
+:::
+
+---
+
+
+<!--Page 2-->
+
+# Visualizations
+
+::: {.panel-tabset}
+
+## Visuals
+
+Add your plots, charts, and analysis here.
+
+```{python}
+
+import altair as alt
+import pandas as pd
+
+```
+
+:::
+
+---
+
+<!--Page 3-->
+
+# Travis
+
+::: {.panel-tabset}
+
+## I will put my stuff here
+
+Whatever example
+
+
+:::
+
+---
+
+<!--Page 4-->
+
+# Research Questions
+
+::: {.panel-tabset}
+
+## Questions
+
+Here are the questions we are asking:
+
+- **How do all three relate (Wind, Temperature, Clouds)?**  
+- **How does Pressure and DewPoint affect the other 3?**  
+- **Are there any interesting seasonal patterns?**  
+
+:::
