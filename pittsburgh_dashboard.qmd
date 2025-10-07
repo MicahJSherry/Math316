@@ -197,6 +197,106 @@ chart5 = alt.Chart(summary).mark_line(point=True).encode(
 chart5
 ```
 
+## Temperature and Dew Point
+```{python}
+#| fig-format: png 
+df = pd.read_csv("Pittsburgh_hourly_normals_1981_2010.csv")
+df["DATE"] = pd.to_datetime("2000-" + df["DATE"].astype(str), errors="coerce")
+df["DayOfYear"] = df["DATE"].dt.dayofyear
+df["Hour"] = df["DATE"].dt.hour
+temp_cols = ["HLY-TEMP-NORMAL","HLY-TEMP-10PCTL","HLY-TEMP-90PCTL"]+["HLY-DEWP-NORMAL","HLY-DEWP-10PCTL","HLY-DEWP-90PCTL"]
+df[temp_cols]= df[temp_cols]/10
+daily_stats = (
+    df.groupby("DayOfYear")[temp_cols]
+        .agg("mean")
+        .reset_index()
+)
+
+
+#summary = daily_stats.melt(id_vars=["DayOfYear"], var_name="temp_type",value_name="temp")
+
+chart = alt.Chart(daily_stats).mark_line().encode(
+    x=alt.X("DayOfYear",title= "Day"),
+    y=alt.Y("HLY-TEMP-NORMAL:Q",title="Average Temperature (F°)")
+).properties(
+    title="Average Temperature by Day (1981–2010)",
+    width=700,
+    height=500
+)
+temp_pctl = chart.mark_area(opacity=.3).encode(
+    x=alt.X("DayOfYear",title= "Day"),
+    y="HLY-TEMP-10PCTL:Q",y2="HLY-TEMP-90PCTL:Q"
+)
+dew = chart.mark_line(color="red").encode(
+    x=alt.X("DayOfYear",title= "Day"),
+    y="HLY-DEWP-NORMAL:Q"
+)
+dew_pctl = chart.mark_area(opacity=.3, color="red").encode(
+    x=alt.X("DayOfYear",title= "Day"),
+    y="HLY-DEWP-10PCTL:Q",
+    y2="HLY-DEWP-90PCTL:Q"
+)
+chart+temp_pctl+dew+dew_pctl 
+```
+## Dew Point vs Wind Speed
+```{python}
+cols = ["HLY-DEWP-NORMAL",'HLY-WIND-AVGSPD',"Hour"]
+
+
+
+daily_df = df.groupby("DayOfYear")[cols].sample(n=2).reset_index()
+bins = [0, 6, 12, 18, 24]
+labels = ['Night', 'Morning', 'Afternoon', 'Early Morning'] 
+daily_df['Time_Category'] = pd.cut(
+    daily_df['Hour'],
+    bins=bins,
+    labels=labels,
+    right=False, # Use [start, end) interval (inclusive start, exclusive end)
+    include_lowest=True # Include the lowest value (0)
+)
+
+chart = alt.Chart(daily_df).mark_point().encode(
+    x=alt.X(cols[0],title="Dew Point (F°)"),
+    y=alt.Y(cols[1],title='Average Wind Speed (mph)'),
+    color="Time_Category:N"
+).properties(
+    title="Dew Point vs Wind Speed",
+    width=700,
+    height=450
+)
+chart
+```
+
+## Pressure vs Wind Speed
+```{python}
+cols = ["DELTA-PRES",'HLY-WIND-AVGSPD',"Hour"]
+df["DELTA-PRES"] = df["HLY-PRES-NORMAL"] - df["HLY-PRES-NORMAL"].mean()
+
+
+daily_df = df.groupby("DayOfYear")[cols].sample(n=2).reset_index()
+bins = [0, 6, 12, 18, 24]
+labels = ['Night', 'Morning', 'Afternoon', 'Early Morning'] 
+daily_df['Time_Category'] = pd.cut(
+    daily_df['Hour'],
+    bins=bins,
+    labels=labels,
+    right=False, # Use [start, end) interval (inclusive start, exclusive end)
+    include_lowest=True # Include the lowest value (0)
+)
+
+chart = alt.Chart(daily_df).mark_point().encode(
+    x=alt.X(cols[0],title="Deviation from mean pressure"),
+    y=alt.Y(cols[1],title='Average Wind Speed (mph)'),
+    color="Time_Category:N"
+).properties(
+    title="Pressure vs Wind Speed",
+    width=700,
+    height=450
+)
+chart
+
+```
+
 ## Daily Wind Speeds
 ```{python}
 
