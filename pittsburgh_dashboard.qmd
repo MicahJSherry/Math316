@@ -10,7 +10,7 @@ format:
 ---
 
 <!-- Page 1 -->
-# Overview
+# Dataset Overview
 
 ::: {.panel-tabset}
 
@@ -69,8 +69,9 @@ table
 
 ---
 
-<!-- Page 2 -->
-# Visualizations
+<!--Page 2-->
+# Cloud Basics
+
 ::: {.panel-tabset}
 
 ## Monthly Cloud Trends
@@ -104,7 +105,7 @@ chart1 = alt.Chart(cloud_long).mark_line(point=True).encode(
     y=alt.Y("Percent:Q", title="Average Cloud Cover (%)"),
     color=alt.Color("Condition:N", title="Condition")
 ).properties(
-    title="Average Cloud Cover by Month (1981–2010)",
+    title="Pittsburgh Average Cloud Cover by Month (1981–2010)",
     width=700,
     height=450
 )
@@ -122,7 +123,7 @@ chart2 = alt.Chart(cloud_compare_long).mark_bar().encode(
     color=alt.Color("Condition:N", title="Condition"),
     tooltip=["Month:O", "Condition:N", "Percent:Q"]
 ).properties(
-    title="Clear vs Overcast Sky Frequency by Month",
+    title="Pittsburgh Monthly Clear vs Overcast Sky Frequency (1981-2010)",
     width=700,
     height=450
 )
@@ -139,7 +140,7 @@ chart3 = alt.Chart(cloud_monthly).mark_arc(innerRadius=60).encode(
     color=alt.Color("Condition:N"),
     tooltip=[alt.Tooltip("Condition:N"), alt.Tooltip("Percent:Q", format=".1f")]
 ).properties(
-    title="Overall Cloud Cover Distribution (1981–2010, Pittsburgh)",
+    title="Pittsburgh Overall Cloud Cover Distribution (1981–2010)",
     width=700,
     height=450
 )
@@ -157,12 +158,21 @@ chart4 = alt.Chart(cloud_long).mark_point(size=80).encode(
     color=alt.Color("Condition:N"),
     tooltip=["Month:O", "Condition:N", "Percent:Q"]
 ).interactive().properties(
-    title="Cloud Cover Scatter – All Types by Month",
+    title="Pittsburgh Cloud Cover Scatter (1981-2010)",
     width=700,
     height=450
 )
 chart4
 ```
+
+:::
+
+---
+
+<!--Page 3-->
+# Temperature Basics
+
+::: {.panel-tabset}
 
 ## Average Temperature
 ```{python}
@@ -188,111 +198,21 @@ chart5 = alt.Chart(summary).mark_line(point=True).encode(
     y=alt.Y("temp:Q", title="Temperature (°F)"),
     color=alt.Color("temp_type:N", title="Temperature Type")
 ).properties(
-    title="Average Temperature by Day (1981–2010)",
+    title="Pittsburgh Average Temperature by Day (1981–2010)",
     width=700,
     height=500
 )
 chart5
 ```
 
-## Temperature and Dew Point
-```{python}
-df = pd.read_csv("Pittsburgh_hourly_normals_1981_2010.csv")
-df["DATE"] = pd.to_datetime("2000-" + df["DATE"].astype(str), errors="coerce")
-df["DayOfYear"] = df["DATE"].dt.dayofyear
-df["Hour"] = df["DATE"].dt.hour
-temp_cols = ["HLY-TEMP-NORMAL","HLY-TEMP-10PCTL","HLY-TEMP-90PCTL"]+["HLY-DEWP-NORMAL","HLY-DEWP-10PCTL","HLY-DEWP-90PCTL"]
-df[temp_cols]= df[temp_cols]/10
-daily_stats = (
-    df.groupby("DayOfYear")[temp_cols]
-        .agg("mean")
-        .reset_index()
-)
+:::
 
+---
 
-#summary = daily_stats.melt(id_vars=["DayOfYear"], var_name="temp_type",value_name="temp")
+<!--Page 4-->
+# Wind Basics
 
-chart = alt.Chart(daily_stats).mark_line().encode(
-    x=alt.X("DayOfYear",title= "Day"),
-    y=alt.Y("HLY-TEMP-NORMAL:Q",title="Average Temperature (F°)")
-).properties(
-    title="Average Temperature by Day (1981–2010)",
-    width=700,
-    height=500
-)
-temp_pctl = chart.mark_area(opacity=.3).encode(
-    x=alt.X("DayOfYear",title= "Day"),
-    y="HLY-TEMP-10PCTL:Q",y2="HLY-TEMP-90PCTL:Q"
-)
-dew = chart.mark_line(color="red").encode(
-    x=alt.X("DayOfYear",title= "Day"),
-    y="HLY-DEWP-NORMAL:Q"
-)
-dew_pctl = chart.mark_area(opacity=.3, color="red").encode(
-    x=alt.X("DayOfYear",title= "Day"),
-    y="HLY-DEWP-10PCTL:Q",
-    y2="HLY-DEWP-90PCTL:Q"
-)
-chart+temp_pctl+dew+dew_pctl 
-```
-## Dew Point vs Wind Speed
-```{python}
-cols = ["HLY-DEWP-NORMAL",'HLY-WIND-AVGSPD',"Hour"]
-
-
-
-daily_df = df.groupby("DayOfYear")[cols].sample(n=2).reset_index()
-bins = [0, 6, 12, 18, 24]
-labels = ['Night', 'Morning', 'Afternoon', 'Early Morning'] 
-daily_df['Time_Category'] = pd.cut(
-    daily_df['Hour'],
-    bins=bins,
-    labels=labels,
-    right=False, # Use [start, end) interval (inclusive start, exclusive end)
-    include_lowest=True # Include the lowest value (0)
-)
-
-chart = alt.Chart(daily_df).mark_point().encode(
-    x=alt.X(cols[0],title="Dew Point (F°)"),
-    y=alt.Y(cols[1],title='Average Wind Speed (mph)'),
-    color="Time_Category:N"
-).properties(
-    title="Dew Point vs Wind Speed",
-    width=700,
-    height=450
-)
-chart
-```
-
-## Pressure vs Wind Speed
-```{python}
-cols = ["DELTA-PRES",'HLY-WIND-AVGSPD',"Hour"]
-df["DELTA-PRES"] = df["HLY-PRES-NORMAL"] - df["HLY-PRES-NORMAL"].mean()
-
-
-daily_df = df.groupby("DayOfYear")[cols].sample(n=2).reset_index()
-bins = [0, 6, 12, 18, 24]
-labels = ['Night', 'Morning', 'Afternoon', 'Early Morning'] 
-daily_df['Time_Category'] = pd.cut(
-    daily_df['Hour'],
-    bins=bins,
-    labels=labels,
-    right=False, # Use [start, end) interval (inclusive start, exclusive end)
-    include_lowest=True # Include the lowest value (0)
-)
-
-chart = alt.Chart(daily_df).mark_point().encode(
-    x=alt.X(cols[0],title="Deviation from mean pressure"),
-    y=alt.Y(cols[1],title='Average Wind Speed (mph)'),
-    color="Time_Category:N"
-).properties(
-    title="Pressure vs Wind Speed",
-    width=700,
-    height=450
-)
-chart
-
-```
+::: {.panel-tabset}
 
 ## Daily Wind Speeds
 ```{python}
@@ -324,8 +244,8 @@ chart6 = alt.Chart(hourly_wind).mark_area(
     y=alt.Y('HLY-WIND-AVGSPD:Q', title='Average Wind Speed (mph)')
 ).properties(
     width=700,
-    height=500,
-    title='Average Wind Speed by Hour (1981–2010)'
+    height=450,
+    title='Pittsburgh Average Wind Speed by Hour (1981–2010)'
 )
 chart6
 ```
@@ -363,8 +283,8 @@ chart7 = alt.Chart(monthly_wind).mark_line(point=True).encode(
     y=alt.Y('HLY-WIND-AVGSPD', title='Average Wind Speed (mph)'),
 ).properties(
     width=700,
-    height=500,
-    title='Monthly Average Wind Speeds'
+    height=450,
+    title='Pittsburgh Monthly Average Wind Speeds (1981-2010)'
 )
 
 chart7
@@ -403,7 +323,7 @@ direction_counts_ordered = pd.DataFrame(ordered_data)
 # Make Pie chart
 chart8 = alt.Chart(direction_counts_ordered).mark_arc(
     innerRadius=0,
-    outerRadius=120,
+    outerRadius=280,
     stroke='white',
     strokeWidth=1
 ).encode(
@@ -415,83 +335,19 @@ chart8 = alt.Chart(direction_counts_ordered).mark_arc(
     order=alt.Order('sort_order:O'),
     tooltip=['Direction:N', 'Count:Q', alt.Tooltip('Percentage:Q', format='.1f')]
 ).properties(
-    title='Wind Direction Distribution',
-    width=600,
-    height=600
+    title='Pittsburgh Wind Direction Distribution (1981-2010)',
+    width=700,
+    height=450
 )
 
 chart8
 ```
 
-## Wind Direction Frequency By Season
-```{python}
-seasonal_directions = df.groupby(['Season', 'Primary_Wind_Direction']).size().reset_index(name='Count')
-
-seasonal_directions['Percentage'] = seasonal_directions.groupby('Season')['Count'].transform(
-    lambda x: (x / x.sum()) * 100
-)
-
-season_order = ['Spring', 'Summer', 'Fall', 'Winter']
-
-chart9 = alt.Chart(seasonal_directions).mark_bar().encode(
-    x=alt.X('Primary_Wind_Direction:N', 
-            title='Wind Direction',
-            sort=direction_order),
-    y=alt.Y('Percentage:Q', 
-            title='Percentage of Time',
-            scale=alt.Scale(domain=[0, 100])),
-    color=alt.Color('Season:N', 
-                    scale=alt.Scale(scheme='category10'),
-                    sort=season_order),
-    column=alt.Column('Season:N', 
-                     title='Season',
-                     sort=season_order),
-    tooltip=['Season:N', 'Primary_Wind_Direction:N', 'Percentage:Q']
-).properties(
-    width=350,
-    height=700,
-    title='Seasonal Wind Direction Patterns'
-)
-
-chart9
-```
-
-## Pressure Range Frequency Pivot Table by Season
-```{python}
-import pandas as pd
-
-# Unit conversion - divide pressure by 10 to get correct hPa values
-df['HLY-PRES-NORMAL'] = df['HLY-PRES-NORMAL'] / 10.0
-
-# Pressure ranges
-pressure_bins = [1014, 1015, 1016, 1017, 1018, 1019, 1020, float('inf')]
-pressure_labels = ['1014-1015', '1015-1016', '1016-1017', '1017-1018', 
-                  '1018-1019', '1019-1020', '1020+']
-
-df['Pressure_Range_hPa'] = pd.cut(df['HLY-PRES-NORMAL'], 
-                                     bins=pressure_bins, 
-                                     labels=pressure_labels, 
-                                     right=False, 
-                                     include_lowest=True)
-
-pressure_range_pivot = pd.pivot_table(
-    df,
-    values='HLY-PRES-NORMAL',
-    index='Pressure_Range_hPa',
-    columns='Season',
-    aggfunc='count',
-    fill_value=0
-)
-
-pivot_table1 = pressure_range_pivot[['Spring', 'Summer', 'Fall', 'Winter']]
-
-pivot_table1
-```
 :::
 
 ---
 
-<!--Page 3-->
+<!--Page 5-->
 # Wind, Temperature, and Clouds Relationship
 
 ::: {.panel-tabset}
@@ -522,7 +378,7 @@ df_norm = df.groupby("Month")[list(cols.values())].mean()
 df_norm = (df_norm - df_norm.min()) / (df_norm.max() - df_norm.min())
 df_norm = df_norm.reset_index().melt("Month", var_name="Variable", value_name="Normalized")
 
-chart = alt.Chart(df_norm).mark_line(point=True).encode(
+chart9 = alt.Chart(df_norm).mark_line(point=True).encode(
     x=alt.X("Month:O", title="Month"),
     y=alt.Y("Normalized:Q", title="Normalized Value (0–1)"),
     color=alt.Color("Variable:N", title="Variable"),
@@ -533,23 +389,21 @@ chart = alt.Chart(df_norm).mark_line(point=True).encode(
     height=500
 )
 
-chart
+chart9
 ```
 
 ## Seasonal Relationship Pivot Table
 
 ```{python}
-pivot = pd.pivot_table(
+pivot_table1 = pd.pivot_table(
     df,
     values=["Temperature (°F)", "Wind (MPH)", "Cloud (Scattered %)"],
     index="Month",
     aggfunc="mean"
 ).round(2)
 
-pivot
-
+pivot_table1
 ```
-
 
 ## Observed Trends Summary
 
@@ -564,7 +418,274 @@ print("- This proves the higher the temperature and slower the wind, the more cl
 
 ---
 
-<!-- Page 4 -->
+<!--Page 6-->
+# Dew Point/Pressure Interactions
+
+::: {.panel-tabset}
+
+## Temperature & Dew Point
+```{python}
+df = pd.read_csv("Pittsburgh_hourly_normals_1981_2010.csv")
+df["DATE"] = pd.to_datetime("2000-" + df["DATE"].astype(str), errors="coerce")
+df["DayOfYear"] = df["DATE"].dt.dayofyear
+df["Hour"] = df["DATE"].dt.hour
+temp_cols = ["HLY-TEMP-NORMAL","HLY-TEMP-10PCTL","HLY-TEMP-90PCTL"]+["HLY-DEWP-NORMAL","HLY-DEWP-10PCTL","HLY-DEWP-90PCTL"]
+df[temp_cols]= df[temp_cols]/10
+daily_stats = (
+    df.groupby("DayOfYear")[temp_cols]
+        .agg("mean")
+        .reset_index()
+)
+
+
+#summary = daily_stats.melt(id_vars=["DayOfYear"], var_name="temp_type",value_name="temp")
+
+chart = alt.Chart(daily_stats).mark_line().encode(
+    x=alt.X("DayOfYear",title= "Day of Year"),
+    y=alt.Y("HLY-TEMP-NORMAL:Q",title="Average Temp. & Dew Point (F°)")
+).properties(
+    title="Temperature vs Dew Point (1981–2010)",
+    width=700,
+    height=500
+)
+temp_pctl = chart.mark_area(opacity=.3).encode(
+    x=alt.X("DayOfYear",title= "Day of Year"),
+    y="HLY-TEMP-10PCTL:Q",y2="HLY-TEMP-90PCTL:Q"
+)
+dew = chart.mark_line(color="red").encode(
+    x=alt.X("DayOfYear",title= "Day of Year"),
+    y="HLY-DEWP-NORMAL:Q"
+)
+dew_pctl = chart.mark_area(opacity=.3, color="red").encode(
+    x=alt.X("DayOfYear",title= "Day of Year"),
+    y="HLY-DEWP-10PCTL:Q",
+    y2="HLY-DEWP-90PCTL:Q"
+)
+chart+temp_pctl+dew+dew_pctl 
+```
+
+## Dew Point & Wind Speed
+```{python}
+cols = ["HLY-DEWP-NORMAL",'HLY-WIND-AVGSPD',"Hour"]
+
+
+
+daily_df = df.groupby("DayOfYear")[cols].sample(n=2).reset_index()
+bins = [0, 6, 12, 18, 24]
+labels = ['Night', 'Morning', 'Afternoon', 'Early Morning'] 
+daily_df['Time_Category'] = pd.cut(
+    daily_df['Hour'],
+    bins=bins,
+    labels=labels,
+    right=False, # Use [start, end) interval (inclusive start, exclusive end)
+    include_lowest=True # Include the lowest value (0)
+)
+
+chart10 = alt.Chart(daily_df).mark_point().encode(
+    x=alt.X(cols[0],title="Dew Point (F°)"),
+    y=alt.Y(cols[1],title='Average Wind Speed (mph)'),
+    color="Time_Category:N"
+).properties(
+    title="Dew Point vs Wind Speed (1981-2010)",
+    width=700,
+    height=450
+)
+chart10
+```
+
+## Pressure & Wind Speed
+```{python}
+cols = ["DELTA-PRES",'HLY-WIND-AVGSPD',"Hour"]
+df["DELTA-PRES"] = df["HLY-PRES-NORMAL"] - df["HLY-PRES-NORMAL"].mean()
+
+
+daily_df = df.groupby("DayOfYear")[cols].sample(n=2).reset_index()
+bins = [0, 6, 12, 18, 24]
+labels = ['Night', 'Morning', 'Afternoon', 'Early Morning'] 
+daily_df['Time_Category'] = pd.cut(
+    daily_df['Hour'],
+    bins=bins,
+    labels=labels,
+    right=False, # Use [start, end) interval (inclusive start, exclusive end)
+    include_lowest=True # Include the lowest value (0)
+)
+
+chart11 = alt.Chart(daily_df).mark_point().encode(
+    x=alt.X(cols[0],title="Deviation from mean pressure"),
+    y=alt.Y(cols[1],title='Average Wind Speed (mph)'),
+    color="Time_Category:N"
+).properties(
+    title="Pressure vs Wind Speed (1981-2010)",
+    width=700,
+    height=450
+)
+chart11
+```
+
+:::
+
+---
+
+<!-- Page 7 -->
+# Seasonal Observations
+
+::: {.panel-tabset}
+
+## Wind Direction Seasonal Frequency
+```{python}
+import pandas as pd
+
+df = pd.read_csv("Pittsburgh_hourly_normals_1981_2010.csv")
+
+speed_columns = ['HLY-WIND-AVGSPD', 'HLY-WIND-VCTSPD']
+for col in speed_columns:
+    df[col] = df[col] / 10.0
+
+# Add date and season columns
+df['DATE'] = pd.to_datetime('2000-' + df['DATE'].astype(str))
+df['Month'] = df['DATE'].dt.month
+df['Hour'] = df['DATE'].dt.hour
+df['Season'] = df['Month'].map({12: 'Winter', 1: 'Winter', 2: 'Winter',
+                                3: 'Spring', 4: 'Spring', 5: 'Spring',
+                                6: 'Summer', 7: 'Summer', 8: 'Summer',
+                                9: 'Fall', 10: 'Fall', 11: 'Fall'})
+
+percentage_columns = ['HLY-WIND-1STPCT', 'HLY-WIND-2NDPCT', 'HLY-WIND-PCTCLM']
+for col in percentage_columns:
+    df[col] = df[col] / 10.0
+
+def find_cardinal_direction(direction_value):
+        direction_map = {1: 'N', 2: 'NE', 3: 'E', 4: 'SE', 5: 'S', 6: 'SW', 7: 'W', 8: 'NW'}
+        return direction_map.get(int(direction_value))
+
+df['Primary_Wind_Direction'] = df['HLY-WIND-1STDIR'].apply(find_cardinal_direction)
+
+# 1st direction frequency
+direction_counts = df['Primary_Wind_Direction'].value_counts().reset_index()
+direction_counts.columns = ['Direction', 'Count']
+direction_counts['Percentage'] = (direction_counts['Count'] / direction_counts['Count'].sum()) * 100
+
+# Sort order cardinally
+direction_order = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+
+seasonal_directions = df.groupby(['Season', 'Primary_Wind_Direction']).size().reset_index(name='Count')
+
+seasonal_directions['Percentage'] = seasonal_directions.groupby('Season')['Count'].transform(
+    lambda x: (x / x.sum()) * 100
+)
+
+season_order = ['Spring', 'Summer', 'Fall', 'Winter']
+
+chart12 = alt.Chart(seasonal_directions).mark_bar().encode(
+    x=alt.X('Primary_Wind_Direction:N', 
+            title='Wind Direction',
+            sort=direction_order),
+    y=alt.Y('Percentage:Q', 
+            title='Percentage of Time',
+            scale=alt.Scale(domain=[0, 100])),
+    color=alt.Color('Season:N', 
+                    scale=alt.Scale(scheme='category10'),
+                    sort=season_order),
+    column=alt.Column('Season:N', 
+                     title='Season',
+                     sort=season_order),
+    tooltip=['Season:N', 'Primary_Wind_Direction:N', 'Percentage:Q']
+).properties(
+    width=300,
+    height=600,
+    title='Pittsburgh Seasonal Wind Direction Patterns (1981-2010)'
+)
+chart12
+```
+
+## Pressure Ranges Seasonal Frequency
+```{python}
+import pandas as pd
+
+# Unit conversion - divide pressure by 10 to get correct hPa values
+df['HLY-PRES-NORMAL'] = df['HLY-PRES-NORMAL'] / 10.0
+
+# Pressure ranges
+pressure_bins = [1014, 1015, 1016, 1017, 1018, 1019, 1020, float('inf')]
+pressure_labels = ['1014-1015', '1015-1016', '1016-1017', '1017-1018', 
+                  '1018-1019', '1019-1020', '1020+']
+
+df['Pressure_Range_hPa'] = pd.cut(df['HLY-PRES-NORMAL'], 
+                                     bins=pressure_bins, 
+                                     labels=pressure_labels, 
+                                     right=False, 
+                                     include_lowest=True)
+
+pressure_range_pivot = pd.pivot_table(
+    df,
+    values='HLY-PRES-NORMAL',
+    index='Pressure_Range_hPa',
+    columns='Season',
+    aggfunc='count',
+    fill_value=0
+)
+pivot_table2 = pressure_range_pivot[['Spring', 'Summer', 'Fall', 'Winter']]
+
+pivot_table2
+```
+
+## Clear Sky Seasonal Frequency
+```{python}
+# Unit conversion for cloud cover
+df['HLY-CLOD-PCTCLR'] = df['HLY-CLOD-PCTCLR'] / 10.0
+
+cloud_seasonal = df.groupby('Season')['HLY-CLOD-PCTCLR'].agg([
+    'mean', 'std', 'min', 'max'
+]).round(1)
+
+cloud_seasonal = cloud_seasonal.reindex(['Spring', 'Summer', 'Fall', 'Winter'])
+
+season_order = ['Spring', 'Summer', 'Fall', 'Winter']
+
+cloud_data = df.groupby('Season')['HLY-CLOD-PCTCLR'].mean().reindex(season_order).reset_index()
+chart13 = alt.Chart(cloud_data).mark_bar(color='lightblue').encode(
+    x=alt.X('Season:N', sort=season_order, title='Season'),
+    y=alt.Y('HLY-CLOD-PCTCLR:Q', title='Average Clear Sky (%)')
+).properties(
+    width=550,
+    height=700,
+    title='Pittsburgh Seasonal Clear Sky % (1981-2010)'
+)
+chart13
+```
+
+## Dew Point Seasonal Averages
+```{python}
+# Unit conversion for dew point
+df['HLY-DEWP-NORMAL'] = df['HLY-DEWP-NORMAL'] / 10.0
+df['HLY-TEMP-NORMAL'] = df['HLY-TEMP-NORMAL'] / 10.0
+
+dewpoint_seasonal = df.groupby('Season')['HLY-DEWP-NORMAL'].agg([
+    'mean', 'std', 'min', 'max'
+]).round(1)
+
+dewpoint_seasonal = dewpoint_seasonal.reindex(['Spring', 'Summer', 'Fall', 'Winter'])
+
+# Calculate temperature - dew point difference by season
+df['Temp_Dewpoint_Diff'] = df['HLY-TEMP-NORMAL'] - df['HLY-DEWP-NORMAL']
+temp_diff_data = df.groupby('Season')['Temp_Dewpoint_Diff'].mean().reindex(season_order).reset_index()
+
+chart14 = alt.Chart(temp_diff_data).mark_bar(color='orange').encode(
+    x=alt.X('Season:N', sort=season_order, title='Season'),
+    y=alt.Y('Temp_Dewpoint_Diff:Q', title='Average Temperature - Dew Point Difference (°F)')
+).properties(
+    width=550,
+    height=700,
+    title='Pittsburgh Seasonal Dew Point Difference (1981-2010)'
+)
+chart14
+```
+
+:::
+
+---
+
+<!-- Page 8 -->
 # Research Questions
 ::: {.panel-tabset}
 
