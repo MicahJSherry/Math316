@@ -91,7 +91,6 @@ cloud_cols = {
 }
 df = df.rename(columns=cloud_cols)
 
-# Fix unit conversion - divide cloud percentages by 10
 cloud_columns = ["Clear", "Few", "Scattered", "Broken", "Overcast"]
 for col in cloud_columns:
     if col in df.columns:
@@ -168,7 +167,6 @@ chart4
 ## Average Temperature
 ```{python}
 
-# Reload and prepare data
 df = pd.read_csv("Pittsburgh_hourly_normals_1981_2010.csv")
 df["DATE"] = pd.to_datetime("2000-" + df["DATE"].astype(str), errors="coerce")
 df["DayOfYear"] = df["DATE"].dt.dayofyear
@@ -199,7 +197,6 @@ chart5
 
 ## Temperature and Dew Point
 ```{python}
-#| fig-format: png 
 df = pd.read_csv("Pittsburgh_hourly_normals_1981_2010.csv")
 df["DATE"] = pd.to_datetime("2000-" + df["DATE"].astype(str), errors="coerce")
 df["DayOfYear"] = df["DATE"].dt.dayofyear
@@ -467,12 +464,75 @@ chart9
 
 ---
 
-<!-- Page 3 -->
-# Travis
+<!--Page 3-->
+# Wind, Temperature, and Clouds Relationship
+
 ::: {.panel-tabset}
 
-## I will put my stuff here
-Whatever example.
+## Seasonal Relationship Visualization
+
+```{python}
+import pandas as pd
+import altair as alt
+
+df = pd.read_csv("Pittsburgh_hourly_normals_1981_2010.csv")
+df["DATE"] = pd.to_datetime("2000-" + df["DATE"].astype(str), errors="coerce")
+df["Month"] = df["DATE"].dt.month
+
+cols = {
+    "HLY-TEMP-NORMAL": "Temperature (°F)",
+    "HLY-WIND-AVGSPD": "Wind (MPH)",
+    "HLY-CLOD-PCTSCT": "Cloud (Scattered %)"
+}
+df = df.rename(columns=cols)
+
+df = df[list(cols.values()) + ["Month"]].dropna()
+df["Temperature (°F)"] /= 10
+df["Wind (MPH)"] /= 10
+df["Cloud (Scattered %)"] /= 10
+
+df_norm = df.groupby("Month")[list(cols.values())].mean()
+df_norm = (df_norm - df_norm.min()) / (df_norm.max() - df_norm.min())
+df_norm = df_norm.reset_index().melt("Month", var_name="Variable", value_name="Normalized")
+
+chart = alt.Chart(df_norm).mark_line(point=True).encode(
+    x=alt.X("Month:O", title="Month"),
+    y=alt.Y("Normalized:Q", title="Normalized Value (0–1)"),
+    color=alt.Color("Variable:N", title="Variable"),
+    tooltip=["Month", "Variable", "Normalized"]
+).properties(
+    title="Seasonal Relationship of Temperature, Wind, and Cloud Cover",
+    width=700,
+    height=500
+)
+
+chart
+```
+
+## Seasonal Relationship Pivot Table
+
+```{python}
+pivot = pd.pivot_table(
+    df,
+    values=["Temperature (°F)", "Wind (MPH)", "Cloud (Scattered %)"],
+    index="Month",
+    aggfunc="mean"
+).round(2)
+
+pivot
+
+```
+
+
+## Observed Trends Summary
+
+```{python}
+print("Findings:")
+print("- June-August: temperature rises and wind decreases causing more scattered clouds in the sky.")
+print("- September-December: temperature falls and wind picks up, while cloud cover decreases.")
+print("- This proves the higher the temperature and slower the wind, the more clouds there are and vice versa.")
+```
+
 :::
 
 ---
@@ -482,7 +542,6 @@ Whatever example.
 ::: {.panel-tabset}
 
 ## Questions
-Here are the questions we are asking:
 - **How do all three relate (Wind, Temperature, Clouds)?**  
 - **How does Pressure and DewPoint affect the other 3?**  
 - **Are there any interesting seasonal patterns?**
