@@ -124,17 +124,21 @@ temp_col = "HLY-TEMP-NORMAL"
 daily_stats = (
     df.groupby("DayOfYear")[temp_col]
         .agg(["min", "mean", "max"])
-        .rename(columns={"min": "min_temp", "mean": "mean_temp", "max": "max_temp"})
         .reset_index()
 )
-daily_stats[["min_temp", "mean_temp", "max_temp"]] = (daily_stats[["min_temp", "mean_temp", "max_temp"]] / 10).round(1)
+daily_stats[["min", "mean", "max"]] = (daily_stats[["min", "mean", "max"]] / 10).round(1)
 
 summary = daily_stats.melt(id_vars=["DayOfYear"], var_name="temp_type", value_name="temp")
 
-chart5 = alt.Chart(summary).mark_line(point=True).encode(
-    x=alt.X("DayOfYear", title="Day of Year"),
+chart5 = alt.Chart(summary).mark_line().encode(
+    x=alt.X("DayOfYear", title="Day of Year", scale=alt.Scale(domain=[1, 366])),
     y=alt.Y("temp:Q", title="Temperature (°F)"),
-    color=alt.Color("temp_type:N", title="Temperature Type")
+    color=alt.Color("temp_type:N", title="Temperature Type",
+        scale=alt.Scale(
+            domain=["min", "mean", "max"],
+            range = ["blue", "green", "red"]),
+        legend=alt.Legend(title='Daily temperature')
+        )
 ).properties(
     title="Pittsburgh Average Temperature by Day (1981–2010)",
     width=700,
@@ -261,47 +265,92 @@ print("- This proves the higher the temperature and slower the wind, the more cl
 
 ## Temperature & Dew Point
 ```{python}
+import pandas as pd
+import altair as alt
+
+# --- Data Preparation (Unchanged) ---
+# Assuming the file "Pittsburgh_hourly_normals_1981_2010.csv" is available.
 df = pd.read_csv("Pittsburgh_hourly_normals_1981_2010.csv")
 df["DATE"] = pd.to_datetime("2000-" + df["DATE"].astype(str), errors="coerce")
 df["DayOfYear"] = df["DATE"].dt.dayofyear
-df["Hour"] = df["DATE"].dt.hour
-temp_cols = ["HLY-TEMP-NORMAL","HLY-TEMP-10PCTL","HLY-TEMP-90PCTL"]+["HLY-DEWP-NORMAL","HLY-DEWP-10PCTL","HLY-DEWP-90PCTL"]
-df[temp_cols]= df[temp_cols]/10
+temp_cols = [
+    "HLY-TEMP-NORMAL", "HLY-TEMP-10PCTL", "HLY-TEMP-90PCTL",
+    "HLY-DEWP-NORMAL", "HLY-DEWP-10PCTL", "HLY-DEWP-90PCTL"
+]
+df[temp_cols] = df[temp_cols] / 10
 daily_stats = (
     df.groupby("DayOfYear")[temp_cols]
         .agg("mean")
         .reset_index()
 )
 
+# --- Altair Refactoring using Transform and Layering ---
 
-#summary = daily_stats.melt(id_vars=["DayOfYear"], var_name="temp_type",value_name="temp")
+# 1. Define the custom names and color map for the legend
+legend_domain = ["HLY-TEMP-NORMAL", "HLY-DEWP-NORMAL"]
+legend_range = ["Avg. Temperature", "Avg. Dew Point"]
+color_map = ["steelblue", "red"]
 
-chart = alt.Chart(daily_stats).mark_line().encode(
-    x=alt.X("DayOfYear",title= "Day of Year"),
-    y=alt.Y("HLY-TEMP-NORMAL:Q",title="Average Temp. & Dew Point (F°)")
+# 2. Base chart definition (includes the fold/melt operation)
+base = alt.Chart(daily_stats).transform_fold(
+    # Select only the normal (mean) columns for the lines
+    fold=["HLY-TEMP-NORMAL", "HLY-DEWP-NORMAL"],
+    as_=['Metric', 'Value']
+).encode(
+    x=alt.X("DayOfYear", title="Day of Year", scale=alt.Scale(domain=[1, 366])),
+    y=alt.Y("Value:Q", title="Average Temp. & Dew Point (F°)"),
+    # 💡 Use the new 'Metric' column for color encoding
+    color=alt.Color('Metric:N',
+        # 🌟 CRITICAL: Use scale/domain/range to rename legend items
+        scale=alt.Scale(domain=legend_domain, range=color_map),
+        legend=alt.Legend(title="Measurement", labelExpr="{'HLY-TEMP-NORMAL': 'Avg. Temp', 'HLY-DEWP-NORMAL': 'Avg. Dew Point'}[datum.value]"),
+    )
 ).properties(
     title="Temperature vs Dew Point (1981–2010)",
     width=700,
     height=500
 )
-temp_pctl = chart.mark_area(opacity=.3).encode(
-    x=alt.X("DayOfYear",title= "Day of Year"),
-    y="HLY-TEMP-10PCTL:Q",y2="HLY-TEMP-90PCTL:Q"
+
+# 3. Create the Lines (Normals)
+lines = base.mark_line(size=2).encode(
+    # Note: No need to redefine X, Y, or Color as they are inherited from base
 )
-dew = chart.mark_line(color="red").encode(
-    x=alt.X("DayOfYear",title= "Day of Year"),
-    y="HLY-DEWP-NORMAL:Q"
+
+# 4. Create the Area Bands (Percentiles)
+temp_area = lines.mark_area(opacity=0.3, color="steelblue").encode(
+    y="HLY-TEMP-10PCTL:Q",
+    y2="HLY-TEMP-90PCTL:Q",
+    color=alt.value("steelblue")
 )
-dew_pctl = chart.mark_area(opacity=.3, color="red").encode(
-    x=alt.X("DayOfYear",title= "Day of Year"),
+dew_area = lines.mark_area(opacity=0.3, color="red").encode(
     y="HLY-DEWP-10PCTL:Q",
-    y2="HLY-DEWP-90PCTL:Q"
+    y2="HLY-DEWP-90PCTL:Q",
+    color=alt.value("red")
 )
-chart+temp_pctl+dew+dew_pctl 
+
+# 5. Combine and display
+final_chart = (lines + temp_area + dew_area).resolve_scale(
+    # Ensure all Y-axes are aligned even though lines and areas are separate
+    y='shared'
+)
+final_chart
 ```
 
 ## Dew Point & Wind Speed
 ```{python}
+df = pd.read_csv("Pittsburgh_hourly_normals_1981_2010.csv")
+
+df["DATE"] = pd.to_datetime("2000-" + df["DATE"].astype(str), errors="coerce")
+
+df["DayOfYear"] = df["DATE"].dt.dayofyear
+
+df["Hour"] = df["DATE"].dt.hour
+
+temp_cols = ["HLY-TEMP-NORMAL","HLY-TEMP-10PCTL","HLY-TEMP-90PCTL"]+["HLY-DEWP-NORMAL","HLY-DEWP-10PCTL","HLY-DEWP-90PCTL"]
+
+df[temp_cols]= df[temp_cols]/10
+
+daily_stats = (df.groupby("DayOfYear")[temp_cols].agg("mean").reset_index())
 cols = ["HLY-DEWP-NORMAL",'HLY-WIND-AVGSPD',"Hour"]
 
 
