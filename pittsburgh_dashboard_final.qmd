@@ -315,7 +315,7 @@ base = alt.Chart(daily_stats).transform_fold(
 lines = base.mark_line(size=2).encode(
     # Note: No need to redefine X, Y, or Color as they are inherited from base
 )
-
+# TODO add legend for Areas 
 # 4. Create the Area Bands (Percentiles)
 temp_area = lines.mark_area(opacity=0.3, color="steelblue").encode(
     y="HLY-TEMP-10PCTL:Q",
