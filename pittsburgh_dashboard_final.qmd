@@ -187,7 +187,7 @@ chart6
 
 ---
 
-<!--Page 5-->
+<!--Page 3-->
 # Wind, Temperature, and Clouds Relationship
 
 ::: {.panel-tabset}
@@ -198,33 +198,44 @@ chart6
 import pandas as pd
 import altair as alt
 
+# Load and prep data
 df = pd.read_csv("Pittsburgh_hourly_normals_1981_2010.csv")
 df["DATE"] = pd.to_datetime("2000-" + df["DATE"].astype(str), errors="coerce")
 df["Month"] = df["DATE"].dt.month
 
+# Rename and clean
 cols = {
     "HLY-TEMP-NORMAL": "Temperature (°F)",
     "HLY-WIND-AVGSPD": "Wind (MPH)",
     "HLY-CLOD-PCTSCT": "Cloud (Scattered %)"
 }
 df = df.rename(columns=cols)
-
 df = df[list(cols.values()) + ["Month"]].dropna()
+
+# Convert to correct units
 df["Temperature (°F)"] /= 10
 df["Wind (MPH)"] /= 10
 df["Cloud (Scattered %)"] /= 10
 
-df_norm = df.groupby("Month")[list(cols.values())].mean()
-df_norm = (df_norm - df_norm.min()) / (df_norm.max() - df_norm.min())
-df_norm = df_norm.reset_index().melt("Month", var_name="Variable", value_name="Normalized")
+# Compute true monthly averages (no normalization or cumulative)
+df_mean = df.groupby("Month")[list(cols.values())].mean().reset_index()
 
-chart9 = alt.Chart(df_norm).mark_line(point=True).encode(
-    x=alt.X("Month:O", title="Month"),
-    y=alt.Y("Normalized:Q", title="Normalized Value (0–1)"),
+# Melt for plotting
+df_melt = df_mean.melt("Month", var_name="Variable", value_name="Value")
+
+# Build final chart
+chart9 = alt.Chart(df_melt).mark_line(point=True).encode(
+    x=alt.X(
+        "Month:O",
+        title="Month",
+        axis=alt.Axis(labelAngle=0),
+        scale=alt.Scale(paddingInner=0.1, paddingOuter=0)
+    ),
+    y=alt.Y("Value:Q", title="Averaged Value"),
     color=alt.Color("Variable:N", title="Variable"),
-    tooltip=["Month", "Variable", "Normalized"]
+    tooltip=["Month", "Variable", alt.Tooltip("Value:Q", format=".2f")]
 ).properties(
-    title="Seasonal Relationship of Temperature, Wind, and Cloud Cover",
+    title="Monthly Relationship of Temperature, Wind, and Cloud Coverage",
     width=700,
     height=500
 )
@@ -245,20 +256,11 @@ pivot_table1 = pd.pivot_table(
 pivot_table1
 ```
 
-## Observed Trends Summary
-
-```{python}
-print("Findings:")
-print("- June-August: temperature rises and wind decreases causing more scattered clouds in the sky.")
-print("- September-December: temperature falls and wind picks up, while cloud cover decreases.")
-print("- This proves the higher the temperature and slower the wind, the more clouds there are and vice versa.")
-```
-
 :::
 
 ---
 
-<!--Page 6-->
+<!--Page 4-->
 # Dew Point/Pressure Interactions
 
 ::: {.panel-tabset}
@@ -383,7 +385,7 @@ chart10
 
 ---
 
-<!-- Page 7 -->
+<!-- Page 5 -->
 # Seasonal Observations
 
 ::: {.panel-tabset}
@@ -455,37 +457,6 @@ chart12 = alt.Chart(seasonal_directions).mark_bar().encode(
 chart12
 ```
 
-## Pressure Ranges Seasonal Frequency
-```{python}
-import pandas as pd
-
-# Unit conversion - divide pressure by 10 to get correct hPa values
-df['HLY-PRES-NORMAL'] = df['HLY-PRES-NORMAL'] / 10.0
-
-# Pressure ranges
-pressure_bins = [1014, 1015, 1016, 1017, 1018, 1019, 1020, float('inf')]
-pressure_labels = ['1014-1015', '1015-1016', '1016-1017', '1017-1018', 
-                  '1018-1019', '1019-1020', '1020+']
-
-df['Pressure_Range_hPa'] = pd.cut(df['HLY-PRES-NORMAL'], 
-                                     bins=pressure_bins, 
-                                     labels=pressure_labels, 
-                                     right=False, 
-                                     include_lowest=True)
-
-pressure_range_pivot = pd.pivot_table(
-    df,
-    values='HLY-PRES-NORMAL',
-    index='Pressure_Range_hPa',
-    columns='Season',
-    aggfunc='count',
-    fill_value=0
-)
-pivot_table2 = pressure_range_pivot[['Spring', 'Summer', 'Fall', 'Winter']]
-
-pivot_table2
-```
-
 ## Dew Point Seasonal Averages
 ```{python}
 # Unit conversion for dew point
@@ -517,7 +488,7 @@ chart14
 
 ---
 
-<!-- Page 8 -->
+<!-- Page 6 -->
 # Research Questions
 ::: {.panel-tabset}
 
