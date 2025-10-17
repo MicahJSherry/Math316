@@ -114,7 +114,8 @@ chart1
 
 ## Average Temperature
 ```{python}
-
+import pandas as pd
+import altair as alt
 df = pd.read_csv("Pittsburgh_hourly_normals_1981_2010.csv")
 df["DATE"] = pd.to_datetime("2000-" + df["DATE"].astype(str), errors="coerce")
 df["DayOfYear"] = df["DATE"].dt.dayofyear
@@ -136,7 +137,7 @@ chart5 = alt.Chart(summary).mark_line().encode(
     color=alt.Color("temp_type:N", title="Temperature Type",
         scale=alt.Scale(
             domain=["min", "mean", "max"],
-            range = ["blue", "green", "red"]),
+            range = ["steelblue", "green", "red"]),
         legend=alt.Legend(title='Daily temperature')
         )
 ).properties(
@@ -264,6 +265,7 @@ print("- This proves the higher the temperature and slower the wind, the more cl
 ::: {.panel-tabset}
 
 ## Temperature & Dew Point
+
 ```{python}
 import pandas as pd
 import altair as alt
@@ -284,7 +286,6 @@ daily_stats = (
         .reset_index()
 )
 
-# --- Altair Refactoring using Transform and Layering ---
 
 # 1. Define the custom names and color map for the legend
 legend_domain = ["HLY-TEMP-NORMAL", "HLY-DEWP-NORMAL"]
@@ -298,7 +299,7 @@ base = alt.Chart(daily_stats).transform_fold(
     as_=['Metric', 'Value']
 ).encode(
     x=alt.X("DayOfYear", title="Day of Year", scale=alt.Scale(domain=[1, 366])),
-    y=alt.Y("Value:Q", title="Average Temp. & Dew Point (F°)"),
+    y=alt.Y("Value:Q", title="Average Temp. & Dew Point (F°)",scale=alt.Scale(domain=[0,90])),
     # 💡 Use the new 'Metric' column for color encoding
     color=alt.Color('Metric:N',
         # 🌟 CRITICAL: Use scale/domain/range to rename legend items
@@ -315,26 +316,61 @@ base = alt.Chart(daily_stats).transform_fold(
 lines = base.mark_line(size=2).encode(
     # Note: No need to redefine X, Y, or Color as they are inherited from base
 )
-# TODO add legend for Areas 
+
 # 4. Create the Area Bands (Percentiles)
-temp_area = lines.mark_area(opacity=0.3, color="steelblue").encode(
-    y="HLY-TEMP-10PCTL:Q",
-    y2="HLY-TEMP-90PCTL:Q",
-    color=alt.value("steelblue")
-)
-dew_area = lines.mark_area(opacity=0.3, color="red").encode(
-    y="HLY-DEWP-10PCTL:Q",
-    y2="HLY-DEWP-90PCTL:Q",
-    color=alt.value("red")
+
+
+# Define the scale for the colors
+color_scale = alt.Scale(
+    domain=['Temp Range (10th-90th Pctl)', 'Dew Point Range (10th-90th Pctl)'],
+    range=color_map # Your desired colors
 )
 
+percentile_legend = lines.mark_area(opacity=0.3).encode(
+    
+    y="HLY-TEMP-10PCTL:Q",
+    y2="HLY-TEMP-90PCTL:Q",
+    fill=alt.Fill(
+        # Set the constant value (the legend label)
+        'Temp Range (10th-90th Pctl)',
+        # Set the nominal type for categorical data
+        type='nominal', 
+        # Apply the custom scale here
+        scale=color_scale,
+        # Optional: Add legend title if desired
+        legend=alt.Legend(title="Percentile Range") 
+    ),
+    #color= alt.value("steelblue") 
+)
+temp_area = lines.mark_area(opacity=0.3).encode(
+    y="HLY-TEMP-10PCTL:Q",
+    y2="HLY-TEMP-90PCTL:Q",
+    fill=alt.datum('Temp Range (10th-90th Pctl)')
+)
+dew_area = lines.mark_area(opacity=0.3).encode(
+    y="HLY-DEWP-10PCTL:Q",
+    y2="HLY-DEWP-90PCTL:Q",
+    fill=alt.datum('Dew Point Range (10th-90th Pctl)')
+
+)
+
+
+
 # 5. Combine and display
-final_chart = (lines + temp_area + dew_area).resolve_scale(
-    # Ensure all Y-axes are aligned even though lines and areas are separate
+final_chart = alt.layer(
+    
+    temp_area,   
+    dew_area,
+    lines,
+    percentile_legend
+).resolve_scale(
+
     y='shared'
 )
 final_chart
+
 ```
+This chart displays the daily average temperature (blue line) and dew point (red line) from 1981 to 2010. The shaded regions show the typical range ($\text{10}^{\text{th}}$ to $\text{90}^{\text{th}}$ percentile) for each measurement. The overlapping area between the blue (temperature) and red (dew point) ranges indicates the days and temperatures where the air is expected to be fully saturated with moisture (100% relative humidity)
 
 ## Dew Point & Wind Speed
 ```{python}
@@ -352,7 +388,6 @@ df[temp_cols]= df[temp_cols]/10
 
 daily_stats = (df.groupby("DayOfYear")[temp_cols].agg("mean").reset_index())
 cols = ["HLY-DEWP-NORMAL",'HLY-WIND-AVGSPD',"Hour"]
-
 
 
 daily_df = df.groupby("DayOfYear")[cols].sample(n=2).reset_index()
@@ -378,6 +413,7 @@ chart10 = alt.Chart(daily_df).mark_point().encode(
 chart10
 ```
 
+This graph shows negative relation ship between dew point and wind speed broken down by time of day.
 
 :::
 
