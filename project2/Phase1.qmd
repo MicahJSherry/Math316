@@ -20,33 +20,34 @@ Exploring daily wind data using the Meteostat Python Library
 
 **Course:** Data Science – Phase 1  
 **Goal:** Explore and compare wind trends in distinct U.S. regions  
-– Florida (hurricanes)  
-– Oklahoma (tornado alley)  
-– Pennsylvania (home)  
-– California (coastal)
 
 ---
+
 
 # Data Source
 
 **Source:** [Meteostat Python API](https://dev.meteostat.net/python/daily.html)  
 
-**Dataset Type:** Daily aggregated weather observations per station  
+**Dataset Type:** Aggregated weather observations per station  
 
 **Key Variables**
 
 - `wspd`: Average wind speed (km/h)  
-- `wpgt`: Maximum wind gust (km/h)  
 - `wdir`: Mean wind direction (degrees)  
-- `tavg` – Average air temperature (°C)  
+- `tavg`: Average air temperature (°C)  
+- `coco`: Condition code 
 
-**Time Period:**
+**Time Period:** 2024
 
-**Units:** Metric (km/h, hPa, °C)
+**Locations:** ~30
+
+**Frame:** Hourly, Daily, Monthly with a focus on Hourly
+
+**Units:** Metric (km/h, degrees, °C)
 
 ---
 
-# Stations Used
+# Example Stations
 
 | Region | Station (City) | Station ID | Climate Context |
 |:--|:--|:--|:--|
@@ -59,10 +60,10 @@ Exploring daily wind data using the Meteostat Python Library
 
 # Research Questions
 
-1. 
+1. How do wind patterns change by region?
 
-2. 
+2. What are some case studies of extreme weather?
 
-3. 
+3. How do geograhical feature (lakes, oceans, mountains, deserts, plains) impact?
 
 ---
