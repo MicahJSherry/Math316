@@ -1,0 +1,68 @@
+---
+title: "Wind Dashboard - Phase 1"
+format:
+  dashboard:
+    theme: yeti
+    pages: true
+    orientation: columns
+    embed-resources: true
+    standalone: true
+---
+
+---
+
+# Overview
+
+## Comparative Wind Patterns Across U.S. Regions
+Exploring daily wind data using the Meteostat Python Library
+
+**Group Members:** Travis, Ira, Micah
+
+**Course:** Data Science – Phase 1  
+**Goal:** Explore and compare wind trends in distinct U.S. regions  
+– Florida (hurricanes)  
+– Oklahoma (tornado alley)  
+– Pennsylvania (home)  
+– California (coastal)
+
+---
+
+# Data Source
+
+**Source:** [Meteostat Python API](https://dev.meteostat.net/python/daily.html)  
+
+**Dataset Type:** Daily aggregated weather observations per station  
+
+**Key Variables**
+
+- `wspd`: Average wind speed (km/h)  
+- `wpgt`: Maximum wind gust (km/h)  
+- `wdir`: Mean wind direction (degrees)  
+- `tavg` – Average air temperature (°C)  
+
+**Time Period:**
+
+**Units:** Metric (km/h, hPa, °C)
+
+---
+
+# Stations Used
+
+| Region | Station (City) | Station ID | Climate Context |
+|:--|:--|:--|:--|
+| Florida | Miami Intl Airport | 72202 | Hurricane-prone coastal region |
+| Oklahoma | Oklahoma City | 72353 | Tornado Alley with frequent severe winds |
+| Pennsylvania | Pittsburgh Intl Airport | 72520 | Inland relative known temperature|
+| California | Los Angeles Intl Airport | 72295 | Pacific coastal winds and mountain effects |
+
+---
+
+# Research Questions
+
+1. 
+
+2. 
+
+3. 
+
+---
