@@ -58,6 +58,23 @@ Exploring daily wind data using the Meteostat Python Library
 
 ---
 
+# 20-City Analysis
+
+::: {.panel-tabset}
+
+## 20-City Analysis
+```{python}
+from Tables_code import create_wind_table
+
+table = create_wind_table()
+
+table
+```
+:::
+
+
+---
+
 # Research Questions
 
 1. How do wind patterns change by region?
