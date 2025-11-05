@@ -4,6 +4,9 @@ from meteostat import Point, Hourly
 import datetime
 from great_tables import GT, md, style, loc
 
+import altair as alt
+from vega_datasets import data
+
 cities_by_region = {
     'Northeast': {
         'New York, NY': (40.7128, -74.0060),
@@ -214,3 +217,270 @@ def create_wind_table():
     globals()['wind_df'] = wind_df_local
 
     return table
+
+
+
+def get_tornado_data():
+    tornados_df = pd.read_csv("Tornado_Tracks_1950_2017_1_7964592706304725094.csv")
+    tornados_df = tornados_df[tornados_df["Year"]==2024]
+
+
+    cat_4 =  tornados_df[tornados_df["Magnitude"]==4]
+    cat_3 = tornados_df[tornados_df["Magnitude"]==3].sample(n=5,random_state=42)
+    cat_2 = tornados_df[tornados_df["Magnitude"]==2].sample(n=5,random_state=42)
+    cat_1 = tornados_df[tornados_df["Magnitude"]==1].sample(n=5,random_state=42)
+    cat_0 = tornados_df[tornados_df["Magnitude"]==0].sample(n=5,random_state=42)
+
+    case_study= pd.concat([cat_4, cat_3, cat_2, cat_1, cat_0])
+    print(case_study.columns)
+    case_study[["State Abbreviation", "Tornado Number", "Year","Month","Day", "Time","Magnitude", "Starting Latitude",	"Starting Longitude",	"Ending Latitude",	"Ending Longitude"]]
+
+
+
+
+    def get_tornado_weekly_wind(tornado_df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Fetch hourly wind data (speed & direction) for a week surrounding each tornado event.
+        
+        Args:
+            tornado_df (pd.DataFrame): DataFrame with columns:
+                ["State Abbreviation", "Tornado Number", "Year", "Month", "Day", "Time",
+                "Magnitude", "Starting Latitude", "Starting Longitude", 
+                "Ending Latitude", "Ending Longitude"]
+                
+        Returns:
+            pd.DataFrame: Combined DataFrame with columns:
+                ['tornado_number', 'state', 'magnitude', 'lat', 'lon', 
+                'time', 'wspd', 'wdir']
+        """
+
+        all_data = []
+
+        for idx, row in tornado_df.iterrows():
+            try:
+                # Parse tornado info
+                tornado_num = row["Tornado Number"]
+                state = row["State Abbreviation"]
+                magnitude = row["Magnitude"]
+                lat = row["Starting Latitude"]
+                lon = row["Starting Longitude"]
+                
+                # Parse date and time (safe fallback)
+                try:
+                    tornado_time = datetime.datetime(
+                        int(row["Year"]),
+                        int(row["Month"]),
+                        int(row["Day"])
+                    )
+                except Exception:
+                    print(f"⚠️ Skipping tornado {tornado_num}: Invalid date")
+                    continue
+
+                # Define ±3 days around event
+                start = tornado_time - datetime.timedelta(days=3)
+                end = tornado_time + datetime.timedelta(days=3)
+
+                print(f"Fetching wind for Tornado {tornado_num} ({state}) from {start.date()} to {end.date()}")
+
+                # Create a Meteostat point and fetch hourly data
+                point = Point(lat, lon)
+                data = Hourly(point, start, end).fetch()
+
+                if not data.empty:
+                    data = data.reset_index()
+                    data["tornado_number"] = tornado_num
+                    data["state"] = state
+                    data["magnitude"] = magnitude
+                    data["lat"] = lat
+                    data["lon"] = lon
+
+                    # Keep only relevant columns
+                    data = data[[
+                        "tornado_number", "state", "magnitude", "lat", "lon",
+                        "time", "wspd", "wdir"
+                    ]]
+                    all_data.append(data)
+                else:
+                    print(f"⚠️ No wind data found for Tornado {tornado_num} ({state})")
+
+            except Exception as e:
+                print(f"❌ Error fetching Tornado {tornado_num}: {e}")
+                continue
+
+        if not all_data:
+            print("No data retrieved for any tornado events.")
+            return pd.DataFrame(columns=[
+                "tornado_number", "state", "magnitude", "lat", "lon", "time", "wspd", "wdir"
+            ])
+
+        result = pd.concat(all_data, ignore_index=True)
+        result["day_of_year"] = result["time"].dt.day_of_year
+
+        return result
+    tornado = get_tornado_weekly_wind(case_study)
+    return tornado
+
+
+
+def generate_tornado_map(tornado):
+    alt.data_transformers.enable("vegafusion")
+    # ['tornado_number', 'state', 'magnitude', 'lat', 'lon', 'time', 'wspd', 'wdir']
+
+    # --------------------------------
+    # Tornado Locations (unique per tornado)
+    # --------------------------------
+    df = (
+        tornado[['tornado_number', 'state', 'magnitude', 'lat', 'lon']]
+        .drop_duplicates(subset=['tornado_number'])
+    )
+
+    # --------------------------------
+    # HOURLY WIND DATA
+    # --------------------------------
+    # No grouping, keep each hourly record
+    hourly_wind = tornado[['tornado_number', 'time', 'wspd']].copy()
+    hourly_wind = hourly_wind.rename(columns={'wspd': 'wind_speed'})
+
+    # --------------------------------
+    # INTERACTIVE SELECTION
+    # --------------------------------
+    brush = alt.selection_point(fields=['tornado_number'])
+
+    # U.S. map base layer
+    us_states = alt.topo_feature(data.us_10m.url, feature='states')
+
+    base_map = alt.Chart(us_states).mark_geoshape(
+        fill="#f0f0f0", stroke='black'
+    ).project("albersUsa").properties(width=900, height=450)
+
+    # Tornado starting points
+    points = alt.Chart(df).mark_circle(size=200, opacity=0.8).encode(
+        longitude='lon:Q',
+        latitude='lat:Q',
+        color=alt.Color('magnitude:N'),
+        tooltip=['tornado_number:N', 'state:N', 'magnitude:Q']
+    ).add_params(
+        brush
+    )
+
+    map_layer = base_map + points
+
+    # --------------------------------
+    # HOURLY LINE CHART (Filtered by Selection)
+    # --------------------------------
+    wind_chart = alt.Chart(hourly_wind).mark_line(point=True).encode(
+        x=alt.X('time:T', title='Time'),
+        y=alt.Y('wind_speed:Q', title='Wind Speed (m/s)'),
+        color='tornado_number:N',
+        tooltip=['tornado_number:N', 'time:T', 'wind_speed:Q']
+    ).transform_filter(
+        brush
+    ).properties(
+        width=900,
+        height=300,
+        title='Hourly Wind Speed (Filtered by Tornado Selection)'
+    )
+
+    # --------------------------------
+    # FINAL DASHBOARD
+    # --------------------------------
+    final_chart = alt.vconcat(map_layer, wind_chart).resolve_scale(color='independent')
+
+    return final_chart
+
+
+def get_hourly_wind(cities: dict, start: datetime.datetime, end: datetime.datetime) -> pd.DataFrame:
+    """
+    Fetch hourly wind data (speed & direction) for multiple cities.
+    
+    Args:
+        cities (dict): Mapping of city names to (lat, lon) tuples.
+        start (datetime): Start date for data.
+        end (datetime): End date for data.
+    
+    Returns:
+        pd.DataFrame: Combined DataFrame with columns:
+                      ['city', 'time', 'wspd', 'wdir']
+    """
+    all_data = []
+
+    for city, (lat, lon) in cities.items():
+        try:
+            print(f"Fetching: {city} ({lat}, {lon})")
+            point = Point(lat, lon)
+            data = Hourly(point, start, end).fetch()
+
+            if not data.empty:
+                data = data.reset_index()
+                data['city'] = city
+                # keep only relevant columns
+                data = data[['city', 'time', 'wspd', 'wdir']]
+                all_data.append(data)
+            else:
+                print(f"⚠️ No data for {city}")
+
+        except Exception as e:
+            print(f"❌ Error fetching {city}: {e}")
+            continue
+
+    if not all_data:
+        print("No data retrieved for any city.")
+        return pd.DataFrame(columns=['city', 'time', 'wspd', 'wdir'])
+
+    return pd.concat(all_data, ignore_index=True)
+
+def generate_cities_map(cities,wind_df):
+    alt.data_transformers.enable("vegafusion")
+    df = pd.DataFrame([
+    {'city': name, 'lat': coords[0], 'lon': coords[1]}
+    for name, coords in cities.items()
+    ])
+
+    time_range = [datetime.datetime(2024, 1, 1), datetime.datetime(2024, 12, 31)]
+
+
+    daily_avg = (
+        wind_df.groupby(['city', 'day_of_year'], as_index=False)['wspd']
+        .mean()
+        .rename(columns={'wspd': 'wind_speed'})
+    )
+    print(daily_avg)
+    #print(data)
+
+
+    brush = alt.selection_point(fields=['city'])
+
+    # World map
+    world = alt.topo_feature(data.us_10m.url, feature='states')
+    base_map = alt.Chart(world).mark_geoshape(
+        fill="#f0f0f0", stroke='black'
+    ).project("albersUsa").properties(width=900, height=450)
+
+    # City points with selection
+    points = alt.Chart(df).mark_circle(size=200, opacity=0.8).encode(
+        longitude='lon:Q',
+        latitude='lat:Q',
+        color='city:N',
+        tooltip=['city:N']
+    ).add_params(
+        brush
+    )
+
+    map_layer = base_map + points
+
+    # Wind line chart filtered by selected cities
+    wind_chart = alt.Chart(daily_avg).mark_line().encode(
+        x='day_of_year:Q',
+        y='wind_speed:Q',
+        color='city:N',
+        tooltip=['city:N', 'day_of_year:Q', 'wind_speed:Q']
+    ).transform_filter(
+        brush
+    ).properties(
+        width=900,
+        height=300,
+        title='Daily Average Wind Speed by City (Filtered by Map Selection)'
+    )
+
+    final_chart = alt.vconcat(map_layer, wind_chart)
+    return final_chart
