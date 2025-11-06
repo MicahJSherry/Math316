@@ -1,5 +1,5 @@
 ---
-title: "Wind Dashboard - Phase 1"
+title: "Wind Dashboard - Phase 2"
 format:
   dashboard:
     theme: yeti
@@ -17,7 +17,8 @@ Exploring daily wind data using the Meteostat Python Library
 
 **Group Members:** Travis, Ira, Micah
 
-**Course:** Data Science – Phase 1  
+**Course:** Data Science – Phase 2 
+
 **Goal:** Explore and compare wind trends in distinct U.S. regions 
 
 :::
@@ -42,7 +43,7 @@ Exploring daily wind data using the Meteostat Python Library
 
 **Locations:** ~30
 
-**Frame:** Hourly, Daily, Monthly with a focus on Hourly
+**Frame:** Hourly and Daily
 
 **Units:** Metric (km/h, degrees, °C)
 
@@ -228,32 +229,7 @@ table
 # Visualizations
 ::: {.panel-tabset}
 
-## Wind Speed by Region
-```{python}
-import altair as alt
-
-# Basic bar chart: mean of avg_wind_speed_kmh by region
-chart = alt.Chart(wind_df).mark_bar().encode(
-    x=alt.X("region:N", title="Region"),
-    y=alt.Y("avg_wind_speed_kmh:Q", title="Avg Wind Speed (km/h)"),
-    color="region:N",
-    tooltip=["city_name","avg_wind_speed_kmh","avg_wind_direction_deg"]
-).properties(title="Average Wind Speed by Region (2024)")
-chart
-```
-
-## Wind Direction vs. Speed
-```{python}
-scatter = alt.Chart(wind_df).mark_circle(size=90).encode(
-    x=alt.X("avg_wind_direction_deg:Q", title="Direction (°)"),
-    y=alt.Y("avg_wind_speed_kmh:Q", title="Speed (km/h)"),
-    color="region:N",
-    tooltip=["city_name","region"]
-).properties(title="Wind Direction vs Speed Distribution")
-scatter
-```
-
-## RQ 1
+## Daily Wind Speed by Region
 ```{python}
 
 import altair as alt
@@ -328,7 +304,7 @@ interactive_chart
 
 ```
 
-## RQ 3
+## Temp vs Speed
 ```{python}
 
 import altair as alt
@@ -413,16 +389,6 @@ wind_chart = (
 
 geo_chart = alt.vconcat(temp_chart, wind_chart).resolve_scale(color="independent")
 geo_chart
-```
-## Pivot Table Example
-```{python}
-pivot = wind_df.pivot_table(
-    values="avg_wind_speed_kmh",
-    index="region",
-    columns="city_name",
-    aggfunc="mean"
-)
-pivot.round(1)
 ```
 
 ## Wind By City Map
