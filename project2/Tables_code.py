@@ -484,3 +484,4 @@ def generate_cities_map(cities,wind_df):
 
     final_chart = alt.vconcat(map_layer, wind_chart)
     return final_chart
+
