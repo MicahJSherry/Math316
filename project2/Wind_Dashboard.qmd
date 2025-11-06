@@ -410,14 +410,10 @@ wind_chart = (
     )
 )
 
+
 geo_chart = alt.vconcat(temp_chart, wind_chart).resolve_scale(color="independent")
 geo_chart
 ```
-
-
-
-
-
 ## Pivot Table Example
 ```{python}
 pivot = wind_df.pivot_table(
@@ -428,9 +424,75 @@ pivot = wind_df.pivot_table(
 )
 pivot.round(1)
 ```
+
+## Wind By City Map
+```{python}
+import datetime
+from Tables_code import get_hourly_wind, generate_cities_map
+cities = {
+    
+        "New York, NY": (40.7128, -74.0060),
+        "Boston, MA": (42.3601, -71.0589),
+        "Philadelphia, PA": (39.9526, -75.1652),
+        "Pittsburgh, PA": (40.4406, -79.9959),
+        "Buffalo, NY": (42.8864, -78.8784),
+        "Portland, ME": (43.6591, -70.2568),
+        "Albany, NY": (42.6526, -73.7562),
+        "Miami, FL": (25.7617, -80.1918),
+        "Atlanta, GA": (33.7490, -84.3880),
+        "Charlotte, NC": (35.2271, -80.8431),
+        "Jacksonville, FL": (30.3322, -81.6557),
+        "Tampa, FL": (27.9506, -82.4572),
+        "New Orleans, LA": (29.9511, -90.0715),
+        "Raleigh, NC": (35.7796, -78.6382),
+        "Chicago, IL": (41.8781, -87.6298),
+        "Detroit, MI": (42.3314, -83.0458),
+        "Minneapolis, MN": (44.9778, -93.2650),
+        "Cleveland, OH": (41.4993, -81.6944),
+        "Milwaukee, WI": (43.0389, -87.9065),
+        "Kansas City, MO": (39.0997, -94.5786),
+        "Des Moines, IA": (41.5868, -93.6250),
+        "Los Angeles, CA": (34.0522, -118.2437),
+        "San Francisco, CA": (37.7749, -122.4194),
+        "Seattle, WA": (47.6062, -122.3321),
+        "Portland, OR": (45.5152, -122.6784),
+        "Denver, CO": (39.7392, -104.9903),
+        "Las Vegas, NV": (36.1699, -115.1398),
+        "Salt Lake City, UT": (40.7608, -111.8910),
+        "Phoenix, AZ": (33.4484, -112.0740),
+        "Key West, FL": (24.5551, -81.7800),
+        "Oklahoma City, OK": (35.4676, -97.5164),
+        "Anchorage, AK": (61.2181, -149.9003),
+        "Honolulu, HI": (21.3069, -157.8583)
+    
+}
+wind_df = get_hourly_wind(cities, 
+    datetime.datetime(2024, 1, 1),
+    datetime.datetime(2024, 12, 31))
+wind_df["day_of_year"]= wind_df["time"].dt.day_of_year
+generate_cities_map(cities, wind_df)
+
+```
+
 :::
+
+
 ---
 
+# Extreme Weather
+::: {.panel-tabset}
+##  Case Study: Tornados
+
+```{python}
+from Tables_code import get_tornado_data, generate_tornado_map
+
+tornado = get_tornado_data()
+generate_tornado_map(tornado)
+
+```
+
+:::
+---
 
 # Research Questions
 
