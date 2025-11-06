@@ -479,9 +479,26 @@ generate_cities_map(cities, wind_df)
 
 ---
 
+# Interactive Feature Explorer
+
+::: {.panel-tabset}
+
+## Interactive Feature Explorer
+```{python}
+from Tables_code import create_complete_dashboard_std
+
+table = create_complete_dashboard_std()
+
+table
+```
+:::
+
+---
+
 # Extreme Weather
 ::: {.panel-tabset}
-##  Case Study: Tornados
+
+## Case Study: Tornados
 
 ```{python}
 from Tables_code import get_tornado_data, generate_tornado_map
@@ -492,17 +509,14 @@ generate_tornado_map(tornado)
 ```
 
 :::
+
 ---
 
 # Research Questions
 
 1. How do wind patterns change by region?
 
-
 2. What are some case studies of extreme weather?
 
-
-3. How do geograhical feature (lakes, oceans, mountains, deserts, plains) impact?
-
----
+3. How do geographical features (lakes, oceans, mountains, deserts, plains) impact wind patterns?
 

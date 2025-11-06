@@ -486,3 +486,570 @@ def generate_cities_map(cities,wind_df):
     final_chart = alt.vconcat(map_layer, wind_chart)
     return final_chart
 
+
+def create_complete_dashboard_std():
+    """
+    Creates a complete wind analysis dashboard with geographic mapping, 
+    wind vector visualization, and standard deviation analysis.
+    
+    Returns:
+        altair.VConcatChart: Complete interactive dashboard
+    """
+    import pandas as pd
+    import numpy as np
+    import altair as alt
+    from meteostat import Point, Hourly
+    import datetime
+
+    # Use inline data instead of JSON files for Quarto compatibility
+    alt.data_transformers.enable('default')
+    alt.data_transformers.disable_max_rows()
+
+    cities_by_region = {
+        'Northeast': {
+            'New York, NY': (40.7128, -74.0060), 'Boston, MA': (42.3601, -71.0589),
+            'Portland, ME': (43.6591, -70.2568), 'Providence, RI': (41.8240, -71.4128),
+            'Newark, NJ': (40.7357, -74.1724), 'Buffalo, NY': (42.8864, -78.8784),
+            'Rochester, NY': (43.1566, -77.6088), 'Erie, PA': (42.1292, -80.0851),
+            'Burlington, VT': (44.4759, -73.2121), 'Manchester, NH': (42.9956, -71.4548),
+            'Montpelier, VT': (44.2601, -72.5806), 'Pittsburgh, PA': (40.4406, -79.9959),
+            'Hartford, CT': (41.7658, -72.6734), 'Waterbury, CT': (41.5582, -73.0515),
+            'Philadelphia, PA': (39.9526, -75.1652), 'Albany, NY': (42.6526, -73.7562),
+            'Syracuse, NY': (43.0481, -76.1474), 'Worcester, MA': (42.2626, -71.8023),
+            'Bridgeport, CT': (41.1865, -73.1952), 'Lowell, MA': (42.6334, -71.3162)
+        },
+        'Southeast': {
+            'Miami, FL': (25.7617, -80.1918), 'Jacksonville, FL': (30.3322, -81.6557),
+            'Tampa, FL': (27.9506, -82.4572), 'Charleston, SC': (32.7765, -79.9311),
+                'Savannah, GA': (32.0835, -81.0998), 'Nashville, TN': (36.1627, -86.7816),
+            'Knoxville, TN': (35.9606, -83.9207), 'Huntsville, AL': (34.7304, -86.5861),
+            'Atlanta, GA': (33.7490, -84.3880), 'Charlotte, NC': (35.2271, -80.8431),
+            'Orlando, FL': (28.5383, -81.3792), 'Birmingham, AL': (33.5186, -86.8104),
+            'Richmond, VA': (37.5407, -77.4360), 'Raleigh, NC': (35.7796, -78.6382),
+            'Greensboro, NC': (36.0726, -79.7920), 'Columbia, SC': (34.0007, -81.0348),
+            'Tallahassee, FL': (30.4518, -84.2807), 'Lexington, KY': (38.0406, -84.5037),
+            'Mobile, AL': (30.6954, -88.0399), 'Virginia Beach, VA': (36.8529, -75.9780)
+        },
+        'Midwest': {
+            'Chicago, IL': (41.8781, -87.6298), 'Detroit, MI': (42.3314, -83.0458),
+            'Cleveland, OH': (41.4993, -81.6944), 'Milwaukee, WI': (43.0389, -87.9065),
+            'Grand Rapids, MI': (42.9634, -85.6681), 'Toledo, OH': (41.6528, -83.5379),
+            'Kansas City, MO': (39.0997, -94.5786), 'Omaha, NE': (41.2565, -95.9345),
+            'Des Moines, IA': (41.5868, -93.6250), 'Wichita, KS': (37.6872, -97.3301),
+            'Oklahoma City, OK': (35.4676, -97.5164), 'Tulsa, OK': (36.1540, -95.9928),
+            'St. Louis, MO': (38.6270, -90.1994), 'Louisville, KY': (38.2527, -85.7585),
+            'Memphis, TN': (35.1495, -90.0490), 'Minneapolis, MN': (44.9778, -93.2650),
+            'Indianapolis, IN': (39.7684, -86.1581), 'Columbus, OH': (39.9612, -82.9988),
+            'Madison, WI': (43.0731, -89.4012), 'Springfield, IL': (39.7817, -89.6501)
+        },
+        'West': {
+            'Los Angeles, CA': (34.0522, -118.2437), 'San Francisco, CA': (37.7749, -122.4194),
+            'Seattle, WA': (47.6062, -122.3321), 'Portland, OR': (45.5152, -122.6784),
+            'San Diego, CA': (32.7157, -117.1611), 'Denver, CO': (39.7392, -104.9903),
+            'Boise, ID': (43.6150, -116.2023), 'Colorado Springs, CO': (38.8339, -104.8214),
+            'Reno, NV': (39.5296, -119.8138), 'Spokane, WA': (47.6587, -117.4260),
+            'Flagstaff, AZ': (35.1983, -111.6513), 'Phoenix, AZ': (33.4484, -112.0740),
+            'Las Vegas, NV': (36.1699, -115.1398), 'Tucson, AZ': (32.2226, -110.9747),
+            'Albuquerque, NM': (35.0844, -106.6504), 'El Paso, TX': (31.7619, -106.4850),
+            'Bakersfield, CA': (35.3733, -119.0187), 'Fresno, CA': (36.7378, -119.7871),
+            'Stockton, CA': (37.9577, -121.2908), 'Modesto, CA': (37.6391, -120.9969)
+        }
+        }
+
+    def wind_stats(city_name, lat, lon, start_year=2024, end_year=2024):
+        try:
+            point = Point(lat, lon)
+            start = datetime.datetime(start_year, 1, 1)
+            end = datetime.datetime(end_year, 12, 31)
+            data = Hourly(point, start, end).fetch()
+            
+            wind_speed_avg = data['wspd'].mean() if 'wspd' in data.columns else np.nan
+            wind_speed_95th = data['wspd'].quantile(0.95) if 'wspd' in data.columns else np.nan
+            wind_speed_max = data['wspd'].max() if 'wspd' in data.columns else np.nan
+            wind_speed_std = data['wspd'].std() if 'wspd' in data.columns else np.nan
+            
+            if 'wdir' in data.columns:
+                wind_directions = data['wdir'].dropna()
+                if len(wind_directions) > 0:
+                    directions_rad = np.radians(wind_directions)
+                    sin_mean = np.mean(np.sin(directions_rad))
+                    cos_mean = np.mean(np.cos(directions_rad))
+                    wind_dir_avg = np.degrees(np.arctan2(sin_mean, cos_mean))
+                    if wind_dir_avg < 0:
+                        wind_dir_avg += 360
+                else:
+                    wind_dir_avg = np.nan
+            else:
+                wind_dir_avg = np.nan
+            
+            return {
+                'city_name': city_name, 'latitude': lat, 'longitude': lon,
+                'avg_wind_speed_kmh': wind_speed_avg, 'max_wind_speed_kmh': wind_speed_max,
+                'wind_speed_95th_kmh': wind_speed_95th, 'wind_speed_std_kmh': wind_speed_std,
+                'avg_wind_direction_deg': wind_dir_avg,
+            }
+        except Exception as e:
+            return {
+                'city_name': city_name, 'latitude': lat, 'longitude': lon,
+                'avg_wind_speed_kmh': np.nan, 'max_wind_speed_kmh': np.nan,
+                'wind_speed_95th_kmh': np.nan, 'wind_speed_std_kmh': np.nan,
+                'avg_wind_direction_deg': np.nan,
+            }
+        
+    results = []
+    for region, cities in cities_by_region.items():
+        for city_name, (lat, lon) in cities.items():
+            result = wind_stats(city_name, lat, lon)
+            result['region'] = region
+            results.append(result)
+
+        wind_df = pd.DataFrame(results)
+
+    geographic_features = {
+        'Coastal': [
+            'New York, NY', 'Boston, MA', 'Portland, ME', 'Providence, RI', 'Newark, NJ',
+            'Miami, FL', 'Jacksonville, FL', 'Tampa, FL', 'Charleston, SC', 'Savannah, GA',
+            'Los Angeles, CA', 'San Francisco, CA', 'Seattle, WA', 'Portland, OR', 'San Diego, CA'
+        ],
+        'Great Lakes': [
+            'Buffalo, NY', 'Rochester, NY', 'Erie, PA',
+            'Chicago, IL', 'Detroit, MI', 'Cleveland, OH', 'Milwaukee, WI', 'Grand Rapids, MI', 'Toledo, OH'
+        ],
+        'Mountain': [
+            'Burlington, VT', 'Manchester, NH', 'Montpelier, VT',
+            'Denver, CO', 'Boise, ID', 'Colorado Springs, CO', 'Reno, NV', 'Spokane, WA', 'Flagstaff, AZ'
+        ],
+        'Desert': [
+            'Phoenix, AZ', 'Las Vegas, NV', 'Tucson, AZ', 'Albuquerque, NM', 'El Paso, TX', 'Bakersfield, CA'
+        ],
+        'Valley': [
+            'Pittsburgh, PA', 'Hartford, CT', 'Waterbury, CT',
+            'Nashville, TN', 'Knoxville, TN', 'Huntsville, AL', 
+            'St. Louis, MO', 'Louisville, KY', 'Memphis, TN',
+            'Fresno, CA', 'Stockton, CA', 'Modesto, CA'
+        ],
+        'Plains': [
+            'Kansas City, MO', 'Omaha, NE', 'Des Moines, IA', 'Wichita, KS', 'Oklahoma City, OK', 'Tulsa, OK'
+        ],
+        'Standard': [
+            'Philadelphia, PA', 'Albany, NY', 'Syracuse, NY', 'Worcester, MA', 'Bridgeport, CT', 'Lowell, MA',
+            'Atlanta, GA', 'Charlotte, NC', 'Orlando, FL', 'Birmingham, AL', 'Richmond, VA', 'Raleigh, NC', 
+            'Greensboro, NC', 'Columbia, SC', 'Tallahassee, FL', 'Lexington, KY', 'Mobile, AL', 'Virginia Beach, VA',
+            'Minneapolis, MN', 'Indianapolis, IN', 'Columbus, OH', 'Madison, WI', 'Springfield, IL'
+        ]
+    }
+
+    wind_df_enhanced = wind_df.copy()
+    wind_df_enhanced['geographic_feature'] = 'Standard'
+
+    for feature, cities in geographic_features.items():
+        if feature != 'Standard':
+            mask = wind_df_enhanced['city_name'].isin(cities)
+            wind_df_enhanced.loc[mask, 'geographic_feature'] = feature
+
+    regions = ['Northeast', 'Southeast', 'Midwest', 'West']
+    geo_features = ['Coastal', 'Great Lakes', 'Mountain', 'Desert', 'Valley', 'Plains', 'Standard']
+    region_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
+
+    def create_clean_wind_vector_chart(df, width=600, height=600):
+        df_vectors = df.copy()
+        df_vectors['direction_rad'] = np.radians((df_vectors['avg_wind_direction_deg'] - 90) % 360)
+        
+        max_wind_speed = df['avg_wind_speed_kmh'].max()
+        vector_scale = 1
+        
+        df_vectors['dx'] = -df_vectors['avg_wind_speed_kmh'] * np.cos(df_vectors['direction_rad']) * vector_scale
+        df_vectors['dy'] = df_vectors['avg_wind_speed_kmh'] * np.sin(df_vectors['direction_rad']) * vector_scale
+        df_vectors['center_x'] = 0
+        df_vectors['center_y'] = 0
+        df_vectors['vector_end_x'] = df_vectors['dx']
+        df_vectors['vector_end_y'] = df_vectors['dy']
+        
+        circle_radius = max_wind_speed
+        domain_size = circle_radius * 2.4
+        chart_pixel_size = width
+        pixels_per_coord_unit = chart_pixel_size / domain_size
+        circle_radius_pixels = circle_radius * pixels_per_coord_unit
+        circle_area = np.pi * (circle_radius_pixels ** 2)
+        circle_size = circle_area * (4 / np.pi)
+        
+        domain_min = -circle_radius * 1.2
+        domain_max = circle_radius * 1.2
+        
+        outer_circle = alt.Chart(pd.DataFrame({'x': [0], 'y': [0]})).mark_circle(
+            size=circle_size, stroke='black', strokeWidth=3, fill=None, opacity=1.0
+        ).encode(
+            x=alt.X('x:Q').scale(domain=[domain_min, domain_max]).title('').axis(labels=False),
+            y=alt.Y('y:Q').scale(domain=[domain_min, domain_max]).title('').axis(labels=False)
+        )
+        
+        center_point = alt.Chart(pd.DataFrame({'x': [0], 'y': [0]})).mark_circle(
+            size=200, stroke='black', strokeWidth=3, fill='white'
+        ).encode(
+            x=alt.X('x:Q').scale(domain=[domain_min, domain_max]),
+            y=alt.Y('y:Q').scale(domain=[domain_min, domain_max])
+        )
+        
+        vectors = alt.Chart(df_vectors).mark_rule(strokeWidth=3, opacity=0.8).encode(
+            x=alt.X('center_x:Q'), y=alt.Y('center_y:Q'), x2='vector_end_x:Q', y2='vector_end_y:Q',
+            color=alt.Color('region:N').scale(domain=regions, range=region_colors).title('Region'),
+            tooltip=[
+                'city_name:N', 'region:N', 'geographic_feature:N',
+                alt.Tooltip('avg_wind_speed_kmh:Q', title='Wind Speed (km/h)', format='.1f'),
+                alt.Tooltip('avg_wind_direction_deg:Q', title='Wind Direction (°)', format='.0f')
+            ]
+        )
+        
+        arrow_scale = vector_scale * 0.8
+        df_vectors['arrow_dx'] = -arrow_scale * np.cos(df_vectors['direction_rad'] + np.pi * 5/6)
+        df_vectors['arrow_dy'] = arrow_scale * np.sin(df_vectors['direction_rad'] + np.pi * 5/6)
+        df_vectors['arrow_dx2'] = -arrow_scale * np.cos(df_vectors['direction_rad'] - np.pi * 5/6)
+        df_vectors['arrow_dy2'] = arrow_scale * np.sin(df_vectors['direction_rad'] - np.pi * 5/6)
+        df_vectors['arrow1_end_x'] = df_vectors['vector_end_x'] + df_vectors['arrow_dx']
+        df_vectors['arrow1_end_y'] = df_vectors['vector_end_y'] + df_vectors['arrow_dy']
+        df_vectors['arrow2_end_x'] = df_vectors['vector_end_x'] + df_vectors['arrow_dx2']
+        df_vectors['arrow2_end_y'] = df_vectors['vector_end_y'] + df_vectors['arrow_dy2']
+        
+        arrow1 = alt.Chart(df_vectors).mark_rule(strokeWidth=2, opacity=0.8).encode(
+            x=alt.X('vector_end_x:Q'), y=alt.Y('vector_end_y:Q'), x2='arrow1_end_x:Q', y2='arrow1_end_y:Q',
+            color=alt.Color('region:N').scale(domain=regions, range=region_colors)
+        )
+        
+        arrow2 = alt.Chart(df_vectors).mark_rule(strokeWidth=2, opacity=0.8).encode(
+            x=alt.X('vector_end_x:Q'), y=alt.Y('vector_end_y:Q'), x2='arrow2_end_x:Q', y2='arrow2_end_y:Q',
+            color=alt.Color('region:N').scale(domain=regions, range=region_colors)
+        )
+        
+        vector_endpoints = alt.Chart(df_vectors).mark_circle(size=60).encode(
+            x=alt.X('vector_end_x:Q'), y=alt.Y('vector_end_y:Q'),
+            color=alt.Color('region:N').scale(domain=regions, range=region_colors),
+            stroke=alt.value('white'), strokeWidth=alt.value(2),
+            tooltip=[
+                'city_name:N', 'region:N', 'geographic_feature:N',
+                alt.Tooltip('avg_wind_speed_kmh:Q', title='Wind Speed (km/h)', format='.1f'),
+                alt.Tooltip('avg_wind_direction_deg:Q', title='Wind Direction (°)', format='.0f')
+            ]
+        )
+        
+        return (outer_circle + center_point + vectors + arrow1 + arrow2 + vector_endpoints).resolve_scale(
+            color='shared'
+        ).properties(width=width, height=height, title='Inversed Direction Vectors: Direction Wind is Traveling to (Magnitude = Speed)')
+
+    # Create the wind vector chart
+    wind_vector_clean = create_clean_wind_vector_chart(wind_df_enhanced, width=600, height=600)
+    
+    # Create individual filterable wind vector components
+    def create_filterable_wind_vector_chart(df, width=600, height=600):
+        df_vectors = df.copy()
+        df_vectors['direction_rad'] = np.radians((df_vectors['avg_wind_direction_deg'] - 90) % 360)
+        
+        max_wind_speed = df['avg_wind_speed_kmh'].max()
+        vector_scale = 1
+        
+        df_vectors['dx'] = -df_vectors['avg_wind_speed_kmh'] * np.cos(df_vectors['direction_rad']) * vector_scale
+        df_vectors['dy'] = df_vectors['avg_wind_speed_kmh'] * np.sin(df_vectors['direction_rad']) * vector_scale
+        df_vectors['center_x'] = 0
+        df_vectors['center_y'] = 0
+        df_vectors['vector_end_x'] = df_vectors['dx']
+        df_vectors['vector_end_y'] = df_vectors['dy']
+        
+        circle_radius = max_wind_speed
+        domain_size = circle_radius * 2.4
+        domain_min = -circle_radius * 1.2
+        domain_max = circle_radius * 1.2
+        
+        # Static elements (not filtered)
+        chart_pixel_size = width
+        pixels_per_coord_unit = chart_pixel_size / domain_size
+        circle_radius_pixels = circle_radius * pixels_per_coord_unit
+        circle_area = np.pi * (circle_radius_pixels ** 2)
+        circle_size = circle_area * (4 / np.pi)
+        
+        outer_circle = alt.Chart(pd.DataFrame({'x': [0], 'y': [0]})).mark_circle(
+            size=circle_size, stroke='black', strokeWidth=3, fill=None, opacity=1.0
+        ).encode(
+            x=alt.X('x:Q').scale(domain=[domain_min, domain_max]).title('').axis(labels=False),
+            y=alt.Y('y:Q').scale(domain=[domain_min, domain_max]).title('').axis(labels=False)
+        )
+        
+        center_point = alt.Chart(pd.DataFrame({'x': [0], 'y': [0]})).mark_circle(
+            size=200, stroke='black', strokeWidth=3, fill='white'
+        ).encode(
+            x=alt.X('x:Q').scale(domain=[domain_min, domain_max]),
+            y=alt.Y('y:Q').scale(domain=[domain_min, domain_max])
+        )
+        
+        # Filterable data elements - create base chart that can be filtered
+        base_chart = alt.Chart(df_vectors)
+        
+        vectors = base_chart.mark_rule(strokeWidth=3, opacity=0.8).encode(
+            x=alt.X('center_x:Q'), y=alt.Y('center_y:Q'), x2='vector_end_x:Q', y2='vector_end_y:Q',
+            color=alt.Color('region:N').scale(domain=regions, range=region_colors).title('Region'),
+            tooltip=[
+                'city_name:N', 'region:N', 'geographic_feature:N',
+                alt.Tooltip('avg_wind_speed_kmh:Q', title='Wind Speed (km/h)', format='.1f'),
+                alt.Tooltip('avg_wind_direction_deg:Q', title='Wind Direction (°)', format='.0f')
+            ]
+        )
+        
+        # Add arrow calculations
+        arrow_scale = vector_scale * 0.8
+        df_vectors['arrow_dx'] = -arrow_scale * np.cos(df_vectors['direction_rad'] + np.pi * 5/6)
+        df_vectors['arrow_dy'] = arrow_scale * np.sin(df_vectors['direction_rad'] + np.pi * 5/6)
+        df_vectors['arrow_dx2'] = -arrow_scale * np.cos(df_vectors['direction_rad'] - np.pi * 5/6)
+        df_vectors['arrow_dy2'] = arrow_scale * np.sin(df_vectors['direction_rad'] - np.pi * 5/6)
+        df_vectors['arrow1_end_x'] = df_vectors['vector_end_x'] + df_vectors['arrow_dx']
+        df_vectors['arrow1_end_y'] = df_vectors['vector_end_y'] + df_vectors['arrow_dy']
+        df_vectors['arrow2_end_x'] = df_vectors['vector_end_x'] + df_vectors['arrow_dx2']
+        df_vectors['arrow2_end_y'] = df_vectors['vector_end_y'] + df_vectors['arrow_dy2']
+        
+        arrow1 = base_chart.mark_rule(strokeWidth=2, opacity=0.8).encode(
+            x=alt.X('vector_end_x:Q'), y=alt.Y('vector_end_y:Q'), x2='arrow1_end_x:Q', y2='arrow1_end_y:Q',
+            color=alt.Color('region:N').scale(domain=regions, range=region_colors)
+        )
+        
+        arrow2 = base_chart.mark_rule(strokeWidth=2, opacity=0.8).encode(
+            x=alt.X('vector_end_x:Q'), y=alt.Y('vector_end_y:Q'), x2='arrow2_end_x:Q', y2='arrow2_end_y:Q',
+            color=alt.Color('region:N').scale(domain=regions, range=region_colors)
+        )
+        
+        vector_endpoints = base_chart.mark_circle(size=60).encode(
+            x=alt.X('vector_end_x:Q'), y=alt.Y('vector_end_y:Q'),
+            color=alt.Color('region:N').scale(domain=regions, range=region_colors),
+            stroke=alt.value('white'), strokeWidth=alt.value(2),
+            tooltip=[
+                'city_name:N', 'region:N', 'geographic_feature:N',
+                alt.Tooltip('avg_wind_speed_kmh:Q', title='Wind Speed (km/h)', format='.1f'),
+                alt.Tooltip('avg_wind_direction_deg:Q', title='Wind Direction (°)', format='.0f')
+            ]
+        )
+        
+        return (outer_circle + center_point + vectors + arrow1 + arrow2 + vector_endpoints).resolve_scale(
+            color='shared'
+        ).properties(width=width, height=height, title='Inversed Direction Vectors: Direction Wind is Traveling to (Magnitude = Speed)')
+
+    # Create a complete filterable version with arrows and endpoints
+    wind_vector_filterable = create_filterable_wind_vector_chart(wind_df_enhanced, width=600, height=600)
+
+    # Define selections first
+    geo_selector = alt.selection_point(fields=['geographic_feature'], empty=True)
+    speed_brush = alt.selection_interval(encodings=['x'])
+    geographic_brush = alt.selection_interval()
+
+    # Create std_chart with conditional styling instead of filtering
+    std_chart = alt.Chart(wind_df_enhanced).mark_circle(
+        size=60, stroke='white', strokeWidth=1
+    ).encode(
+        x=alt.X('avg_wind_speed_kmh:Q', title='Average Wind Speed (km/h)', scale=alt.Scale(domain=[0, 25])),
+        y=alt.Y('wind_speed_std_kmh:Q', title='Wind Speed Standard Deviation (km/h)', scale=alt.Scale(domain=[0, 12])),
+        color=alt.condition(
+            geo_selector,
+            alt.Color('region:N', title='Region', scale=alt.Scale(domain=regions, range=region_colors)),
+            alt.value('lightgray')
+        ),
+        opacity=alt.condition(
+            geo_selector,
+            alt.value(0.8),
+            alt.value(0.3)
+        ),
+        tooltip=[
+            alt.Tooltip('city_name:N', title='City'), alt.Tooltip('region:N', title='Region'),
+            alt.Tooltip('geographic_feature:N', title='Geographic Feature'),
+            alt.Tooltip('avg_wind_speed_kmh:Q', title='Avg Wind Speed (km/h)', format='.1f'),
+            alt.Tooltip('wind_speed_std_kmh:Q', title='Standard Deviation (km/h)', format='.1f')
+        ]
+    ).add_params(speed_brush).transform_filter(geographic_brush).properties(width=600, height=300, title="Average Wind Speed vs Standard Deviation")
+
+    geographic_selector_chart = (
+        alt.Chart(wind_df_enhanced)
+        .mark_rect(height=50)
+        .encode(
+            x=alt.X('geographic_feature:N').sort(geo_features).title(None).axis(labelAngle=-15, labelPadding=10),
+            color=alt.condition(
+                geo_selector,
+                alt.Color('geographic_feature:N').scale(domain=geo_features, range=['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2']).legend(None),
+                alt.value('lightgray')
+            ),
+            opacity=alt.condition(geo_selector, alt.value(1.0), alt.value(0.4)),
+            stroke=alt.condition(geo_selector, alt.value('black'), alt.value('white')),
+            strokeWidth=alt.condition(geo_selector, alt.value(2), alt.value(1))
+        )
+        .add_params(geo_selector)
+        .transform_filter(speed_brush)
+        .properties(width=600, height=75, title='Sort by Geographic Feature')
+        )
+
+    lat_min, lat_max = wind_df_enhanced['latitude'].min(), wind_df_enhanced['latitude'].max()
+    lat_range = lat_max - lat_min
+    lat_domain = [lat_min - lat_range * 0.05, lat_max + lat_range * 0.05]
+
+    lon_min, lon_max = wind_df_enhanced['longitude'].min(), wind_df_enhanced['longitude'].max()
+    lon_range = lon_max - lon_min
+    lon_domain = [lon_min - lon_range * 0.05, lon_max + lon_range * 0.05]
+
+    geographic_background = (
+        alt.Chart(wind_df_enhanced)
+        .mark_circle(size=60, opacity=0.3)
+        .encode(
+            x=alt.X('longitude:Q').scale(domain=lon_domain).title('Longitude (degrees)').axis(grid=True),
+            y=alt.Y('latitude:Q').scale(domain=lat_domain).title('Latitude (degrees)').axis(grid=True),
+            color=alt.value('lightgrey'),
+            tooltip=['city_name:N', alt.Tooltip('longitude:Q', title='Longitude', format='.2f'), 
+                    alt.Tooltip('latitude:Q', title='Latitude', format='.2f'), 'region:N', 'geographic_feature:N',
+                    alt.Tooltip('avg_wind_speed_kmh:Q', title='Wind Speed (km/h)', format='.1f')],
+            stroke=alt.value('white'), strokeWidth=alt.value(0.5)
+        )
+    )
+
+    geographic_foreground = (
+        alt.Chart(wind_df_enhanced)
+        .mark_circle(size=60)
+        .encode(
+            x=alt.X('longitude:Q'), y=alt.Y('latitude:Q'),
+            color=alt.Color('region:N').scale(domain=regions, range=region_colors).title('Region'),
+            tooltip=['city_name:N', alt.Tooltip('longitude:Q', title='Longitude', format='.2f'),
+                    alt.Tooltip('latitude:Q', title='Latitude', format='.2f'), 'region:N', 'geographic_feature:N',
+                    alt.Tooltip('avg_wind_speed_kmh:Q', title='Wind Speed (km/h)', format='.1f')],
+            stroke=alt.value('white'), strokeWidth=alt.value(1)
+        )
+        .transform_filter(geo_selector)
+    )
+
+    geographic_map_chart = (geographic_background + geographic_foreground).add_params(geographic_brush).properties(
+        width=600, height=300, title='City Selector (Brush to Select)'
+    )
+
+    # Create wind vector chart with conditional styling (rebuild with selections applied)
+    def create_interactive_wind_vector_chart(df, width=600, height=600):
+        df_vectors = df.copy()
+        df_vectors['direction_rad'] = np.radians((df_vectors['avg_wind_direction_deg'] - 90) % 360)
+        
+        max_wind_speed = df['avg_wind_speed_kmh'].max()
+        vector_scale = 1
+        
+        df_vectors['dx'] = -df_vectors['avg_wind_speed_kmh'] * np.cos(df_vectors['direction_rad']) * vector_scale
+        df_vectors['dy'] = df_vectors['avg_wind_speed_kmh'] * np.sin(df_vectors['direction_rad']) * vector_scale
+        df_vectors['center_x'] = 0
+        df_vectors['center_y'] = 0
+        df_vectors['vector_end_x'] = df_vectors['dx']
+        df_vectors['vector_end_y'] = df_vectors['dy']
+        
+        circle_radius = max_wind_speed
+        domain_size = circle_radius * 2.4
+        domain_min = -circle_radius * 1.2
+        domain_max = circle_radius * 1.2
+        
+        # Static elements
+        chart_pixel_size = width
+        pixels_per_coord_unit = chart_pixel_size / domain_size
+        circle_radius_pixels = circle_radius * pixels_per_coord_unit
+        circle_area = np.pi * (circle_radius_pixels ** 2)
+        circle_size = circle_area * (4 / np.pi)
+        
+        outer_circle = alt.Chart(pd.DataFrame({'x': [0], 'y': [0]})).mark_circle(
+            size=circle_size, stroke='black', strokeWidth=3, fill=None, opacity=1.0
+        ).encode(
+            x=alt.X('x:Q').scale(domain=[domain_min, domain_max]).title('').axis(labels=False),
+            y=alt.Y('y:Q').scale(domain=[domain_min, domain_max]).title('').axis(labels=False)
+        )
+        
+        center_point = alt.Chart(pd.DataFrame({'x': [0], 'y': [0]})).mark_circle(
+            size=200, stroke='black', strokeWidth=3, fill='white'
+        ).encode(
+            x=alt.X('x:Q').scale(domain=[domain_min, domain_max]),
+            y=alt.Y('y:Q').scale(domain=[domain_min, domain_max])
+        )
+        
+        # Arrows calculations
+        arrow_scale = vector_scale * 0.8
+        df_vectors['arrow_dx'] = -arrow_scale * np.cos(df_vectors['direction_rad'] + np.pi * 5/6)
+        df_vectors['arrow_dy'] = arrow_scale * np.sin(df_vectors['direction_rad'] + np.pi * 5/6)
+        df_vectors['arrow_dx2'] = -arrow_scale * np.cos(df_vectors['direction_rad'] - np.pi * 5/6)
+        df_vectors['arrow_dy2'] = arrow_scale * np.sin(df_vectors['direction_rad'] - np.pi * 5/6)
+        df_vectors['arrow1_end_x'] = df_vectors['vector_end_x'] + df_vectors['arrow_dx']
+        df_vectors['arrow1_end_y'] = df_vectors['vector_end_y'] + df_vectors['arrow_dy']
+        df_vectors['arrow2_end_x'] = df_vectors['vector_end_x'] + df_vectors['arrow_dx2']
+        df_vectors['arrow2_end_y'] = df_vectors['vector_end_y'] + df_vectors['arrow_dy2']
+        
+        # Interactive vector elements with conditional styling
+        vectors = alt.Chart(df_vectors).mark_rule(strokeWidth=3).encode(
+            x=alt.X('center_x:Q'), y=alt.Y('center_y:Q'), x2='vector_end_x:Q', y2='vector_end_y:Q',
+            color=alt.condition(
+                geo_selector,
+                alt.Color('region:N').scale(domain=regions, range=region_colors),
+                alt.value('lightgray')
+            ),
+            opacity=alt.condition(
+                geo_selector,
+                alt.value(0.8),
+                alt.value(0.3)
+            ),
+            tooltip=[
+                'city_name:N', 'region:N', 'geographic_feature:N',
+                alt.Tooltip('avg_wind_speed_kmh:Q', title='Wind Speed (km/h)', format='.1f'),
+                alt.Tooltip('avg_wind_direction_deg:Q', title='Wind Direction (°)', format='.0f')
+            ]
+        ).transform_filter(geographic_brush).transform_filter(speed_brush)
+        
+        arrow1 = alt.Chart(df_vectors).mark_rule(strokeWidth=2).encode(
+            x=alt.X('vector_end_x:Q'), y=alt.Y('vector_end_y:Q'), x2='arrow1_end_x:Q', y2='arrow1_end_y:Q',
+            color=alt.condition(
+                geo_selector,
+                alt.Color('region:N').scale(domain=regions, range=region_colors),
+                alt.value('lightgray')
+            ),
+            opacity=alt.condition(
+                geo_selector,
+                alt.value(0.8),
+                alt.value(0.3)
+            )
+        ).transform_filter(geographic_brush).transform_filter(speed_brush)
+        
+        arrow2 = alt.Chart(df_vectors).mark_rule(strokeWidth=2).encode(
+            x=alt.X('vector_end_x:Q'), y=alt.Y('vector_end_y:Q'), x2='arrow2_end_x:Q', y2='arrow2_end_y:Q',
+            color=alt.condition(
+                geo_selector,
+                alt.Color('region:N').scale(domain=regions, range=region_colors),
+                alt.value('lightgray')
+            ),
+            opacity=alt.condition(
+                geo_selector,
+                alt.value(0.8),
+                alt.value(0.3)
+            )
+        ).transform_filter(geographic_brush).transform_filter(speed_brush)
+        
+        vector_endpoints = alt.Chart(df_vectors).mark_circle(size=60).encode(
+            x=alt.X('vector_end_x:Q'), y=alt.Y('vector_end_y:Q'),
+            color=alt.condition(
+                geo_selector,
+                alt.Color('region:N').scale(domain=regions, range=region_colors),
+                alt.value('lightgray')
+            ),
+            opacity=alt.condition(
+                geo_selector,
+                alt.value(0.8),
+                alt.value(0.3)
+            ),
+            stroke=alt.value('white'), strokeWidth=alt.value(2),
+            tooltip=[
+                'city_name:N', 'region:N', 'geographic_feature:N',
+                alt.Tooltip('avg_wind_speed_kmh:Q', title='Wind Speed (km/h)', format='.1f'),
+                alt.Tooltip('avg_wind_direction_deg:Q', title='Wind Direction (°)', format='.0f')
+            ]
+        ).transform_filter(geographic_brush).transform_filter(speed_brush)
+        
+        return (outer_circle + center_point + vectors + arrow1 + arrow2 + vector_endpoints).resolve_scale(
+            color='shared'
+        ).properties(width=width, height=height, title='Inversed Direction Vectors: Direction Wind is Traveling to (Magnitude = Speed)')
+
+    wind_vector_interactive = create_interactive_wind_vector_chart(wind_df_enhanced, width=600, height=600)
+
+    complete_dashboard_std = (
+        geographic_map_chart &
+        geographic_selector_chart &
+        std_chart &
+        wind_vector_interactive
+    ).resolve_scale(color='independent')
+
+    return complete_dashboard_std
