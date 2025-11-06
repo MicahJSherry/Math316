@@ -232,7 +232,7 @@ def get_tornado_data():
     cat_0 = tornados_df[tornados_df["Magnitude"]==0].sample(n=5,random_state=42)
 
     case_study= pd.concat([cat_4, cat_3, cat_2, cat_1, cat_0])
-    print(case_study.columns)
+    #print(case_study.columns)
     case_study[["State Abbreviation", "Tornado Number", "Year","Month","Day", "Time","Magnitude", "Starting Latitude",	"Starting Longitude",	"Ending Latitude",	"Ending Longitude"]]
 
 
@@ -273,14 +273,14 @@ def get_tornado_data():
                         int(row["Day"])
                     )
                 except Exception:
-                    print(f"⚠️ Skipping tornado {tornado_num}: Invalid date")
+                    #print(f"⚠️ Skipping tornado {tornado_num}: Invalid date")
                     continue
 
                 # Define ±3 days around event
                 start = tornado_time - datetime.timedelta(days=3)
                 end = tornado_time + datetime.timedelta(days=3)
 
-                print(f"Fetching wind for Tornado {tornado_num} ({state}) from {start.date()} to {end.date()}")
+                #print(f"Fetching wind for Tornado {tornado_num} ({state}) from {start.date()} to {end.date()}")
 
                 # Create a Meteostat point and fetch hourly data
                 point = Point(lat, lon)
@@ -300,15 +300,16 @@ def get_tornado_data():
                         "time", "wspd", "wdir"
                     ]]
                     all_data.append(data)
-                else:
-                    print(f"⚠️ No wind data found for Tornado {tornado_num} ({state})")
+                #else:
+                    
+                    #print(f"⚠️ No wind data found for Tornado {tornado_num} ({state})")
 
             except Exception as e:
-                print(f"❌ Error fetching Tornado {tornado_num}: {e}")
+                #print(f"❌ Error fetching Tornado {tornado_num}: {e}")
                 continue
 
         if not all_data:
-            print("No data retrieved for any tornado events.")
+            #print("No data retrieved for any tornado events.")
             return pd.DataFrame(columns=[
                 "tornado_number", "state", "magnitude", "lat", "lon", "time", "wspd", "wdir"
             ])
@@ -406,7 +407,7 @@ def get_hourly_wind(cities: dict, start: datetime.datetime, end: datetime.dateti
 
     for city, (lat, lon) in cities.items():
         try:
-            print(f"Fetching: {city} ({lat}, {lon})")
+            #print(f"Fetching: {city} ({lat}, {lon})")
             point = Point(lat, lon)
             data = Hourly(point, start, end).fetch()
 
@@ -416,15 +417,15 @@ def get_hourly_wind(cities: dict, start: datetime.datetime, end: datetime.dateti
                 # keep only relevant columns
                 data = data[['city', 'time', 'wspd', 'wdir']]
                 all_data.append(data)
-            else:
-                print(f"⚠️ No data for {city}")
+            #else:
+                #print(f"⚠️ No data for {city}")
 
         except Exception as e:
-            print(f"❌ Error fetching {city}: {e}")
+            #print(f"❌ Error fetching {city}: {e}")
             continue
 
     if not all_data:
-        print("No data retrieved for any city.")
+        #print("No data retrieved for any city.")
         return pd.DataFrame(columns=['city', 'time', 'wspd', 'wdir'])
 
     return pd.concat(all_data, ignore_index=True)
@@ -444,7 +445,7 @@ def generate_cities_map(cities,wind_df):
         .mean()
         .rename(columns={'wspd': 'wind_speed'})
     )
-    print(daily_avg)
+    #print(daily_avg)
     #print(data)
 
 
