@@ -1,5 +1,5 @@
 ---
-title: "Wind Dashboard - Phase 2"
+title: "Wind Dashboard"
 format:
   dashboard:
     theme: yeti
@@ -13,11 +13,11 @@ format:
 ::: {.panel-tabset}
 
 ## Comparative Wind Patterns Across U.S. Regions
-Exploring daily wind data using the Meteostat Python Library
+Exploring daily wind data using the Meteostat
 
 **Group Members:** Travis, Ira, Micah
 
-**Course:** Data Science – Phase 2 
+**Course:** Data Science 
 
 **Goal:** Explore and compare wind trends in distinct U.S. regions 
 
@@ -34,10 +34,9 @@ Exploring daily wind data using the Meteostat Python Library
 
 **Key Variables**
 
-- `wspd`: Average wind speed (km/h)  
-- `wdir`: Mean wind direction (degrees)  
-- `tavg`: Average air temperature (°C)  
-- `coco`: Condition code 
+- `wspd`: Average wind speed (mph)  
+- `wdir`: Mean wind direction (degrees) 
+- `tavg`: Average air temperature (°F)  
 
 **Time Period:** 2024
 
@@ -45,7 +44,7 @@ Exploring daily wind data using the Meteostat Python Library
 
 **Frame:** Hourly and Daily
 
-**Units:** Metric (km/h, degrees, °C)
+**Units:** Metric (mph, degrees, °F)
 
 :::
 ---
@@ -112,112 +111,10 @@ cities_by_region = {
 # Regional Wind Table
 ::: {.panel-tabset}
 
-## Aggregation & Table Generation
+## Aggregation Table
 ```{python}
-from great_tables import GT, md, style, loc
 
-def create_wind_table():
-    results = []
-    start = datetime.datetime(2024, 1, 1)
-    end = datetime.datetime(2024, 12, 31)
-
-    for region, cities in cities_by_region.items():
-        for city_name, (lat, lon) in cities.items():
-            try:
-                point = Point(lat, lon)
-                data = Hourly(point, start, end).fetch()
-
-                # Compute average wind speed (km/h). Meteostat returns m/s by default for Hourly; convert to km/h if needed.
-                # If 'wspd' units are meters per second, convert: *3.6
-                if "wspd" in data.columns:
-                    wind_speed_avg = data["wspd"].mean()
-                    # assume units are m/s; convert to km/h
-                    wind_speed_avg = wind_speed_avg * 3.6 if not pd.api.types.is_float_dtype(data["wspd"]) else wind_speed_avg * 3.6
-                else:
-                    wind_speed_avg = np.nan
-
-                # Circular mean for direction
-                if "wdir" in data.columns and len(data["wdir"].dropna()) > 0:
-                    dirs = np.radians(data["wdir"].dropna())
-                    wind_dir_avg = np.degrees(np.arctan2(np.mean(np.sin(dirs)), np.mean(np.cos(dirs))))
-                    if wind_dir_avg < 0:
-                        wind_dir_avg += 360
-                else:
-                    wind_dir_avg = np.nan
-
-                results.append({
-                    "region": region,
-                    "city_name": city_name,
-                    "latitude": lat,
-                    "longitude": lon,
-                    "avg_wind_speed_kmh": wind_speed_avg,
-                    "avg_wind_direction_deg": wind_dir_avg
-                })
-            except Exception:
-                results.append({
-                    "region": region,
-                    "city_name": city_name,
-                    "latitude": lat,
-                    "longitude": lon,
-                    "avg_wind_speed_kmh": np.nan,
-                    "avg_wind_direction_deg": np.nan
-                })
-
-    df = pd.DataFrame(results)
-    df["avg_wind_speed_kmh"] = df["avg_wind_speed_kmh"].round(1)
-    df["avg_wind_direction_deg"] = df["avg_wind_direction_deg"].round(0)
-    df_sorted = df.sort_values(["region", "avg_wind_speed_kmh"], ascending=[True, False]).reset_index(drop=True)
-
-    min_speed = df_sorted["avg_wind_speed_kmh"].min()
-    max_speed = df_sorted["avg_wind_speed_kmh"].max()
-
-    # Direction color function (simple nearest-cardinal mapping)
-    def get_dir_color(deg):
-        if pd.isna(deg): return "#ffffff"
-        deg = float(deg) % 360
-        # Map quadrants to colors: N, E, S, W
-        if (deg >= 315 or deg < 45): return "#007bff"   # North - blue
-        if (deg >= 45 and deg < 135): return "#dc3545"  # East  - red
-        if (deg >= 135 and deg < 225): return "#ffc107" # South - yellow
-        return "#28a745"                                 # West  - green
-
-    # Build Great Table
-    table = (
-        GT(df_sorted)
-        .tab_header(
-            title=md("**Regional Wind Analysis by Speed and Direction**"),
-            subtitle=md("Hourly Averages 2024 | Data: Meteostat")
-        )
-        .cols_label(
-            city_name="City",
-            avg_wind_speed_kmh="Speed (km/h)",
-            avg_wind_direction_deg="Direction (°)"
-        )
-        .tab_spanner(
-            label="Wind Statistics",
-            columns=["avg_wind_speed_kmh", "avg_wind_direction_deg"]
-        )
-        .tab_stub(rowname_col="city_name", groupname_col="region")
-        .data_color(
-            columns=["avg_wind_speed_kmh"],
-            palette=["#f8f9fa","#adb5bd","#6c757d"],
-            domain=[min_speed, max_speed]
-        )
-        .cols_align(align="center", columns=["avg_wind_speed_kmh","avg_wind_direction_deg"])
-        .tab_source_note(
-            source_note=md("**Legend:** 🔵North 🔴East 🟡South 🟢West | Darker = Stronger")
-        )
-    )
-
-    # Apply direction color styles
-    for i, row in df_sorted.iterrows():
-        table = table.tab_style(
-            style=style.fill(color=get_dir_color(row["avg_wind_direction_deg"])),
-            locations=loc.body(columns=["avg_wind_direction_deg"], rows=[i])
-        )
-
-    globals()["wind_df"] = df_sorted
-    return table
+from Tables_code import create_wind_table
 
 table = create_wind_table()
 table
@@ -229,166 +126,25 @@ table
 # Visualizations
 ::: {.panel-tabset}
 
-## Daily Wind Speed by Region
+## Daily Wind Speed
 ```{python}
 
-import altair as alt
-from meteostat import Hourly
+from Tables_code import get_regional_daily_wind, chart_regional_daily_wind
 
-records = []
-
-for region, cities in cities_by_region.items():
-    for city, (lat, lon) in cities.items():
-        point = Point(lat, lon)
-        df = Hourly(point, datetime.datetime(2024,1,1), datetime.datetime(2024,12,31)).fetch()
-        if not df.empty and "wspd" in df.columns:
-            # Convert from m/s → km/h
-            df["wspd_kmh"] = df["wspd"] * 3.6
-            df["date"] = df.index.date
-            daily_avg = df.groupby("date")["wspd_kmh"].mean().reset_index()
-            daily_avg["Region"] = region
-            daily_avg["City"] = city
-            records.append(daily_avg)
-
-# Combine all results
-wind_all = pd.concat(records, ignore_index=True)
-
-# Regional aggregation (mean of all cities in that region per day)
-regional_daily = (
-    wind_all.groupby(["date", "Region"])["wspd_kmh"]
-    .mean()
-    .reset_index()
-)
-
-regional_daily["date"] = pd.to_datetime(regional_daily["date"])
-
-# --- Dropdown setup ---
-region_dropdown = alt.binding_select(
-    options=sorted(regional_daily["Region"].unique().tolist()),
-    name="Select Region:  "
-)
-region_selection = alt.selection_point(fields=["Region"], bind=region_dropdown)
-
-# --- Dynamic color and opacity ---
-color_condition = (
-    alt.when(region_selection)
-    .then(alt.Color("Region:N"))
-    .otherwise(alt.value("lightgray"))
-)
-opacity_condition = (
-    alt.when(region_selection)
-    .then(alt.value(1))
-    .otherwise(alt.value(0.4))
-)
-
-# --- Interactive Line Chart ---
-interactive_chart = (
-    alt.Chart(regional_daily)
-    .mark_line(point=False)
-    .encode(
-        x=alt.X("date:T", title="Date (2024)"),
-        y=alt.Y("wspd_kmh:Q", title="Avg Daily Wind Speed (km/h)"),
-        color=color_condition,
-        opacity=opacity_condition,
-        tooltip=["Region", "wspd_kmh"]
-    )
-    .add_params(region_selection)
-    .properties(
-        title="Average Daily Wind Speed by Region (2024)",
-        width=800,
-        height=400
-    )
-    .interactive()
-)
-interactive_chart
-
+df = get_regional_daily_wind()
+chart = chart_regional_daily_wind(df)
+chart
 ```
 
-## Temp vs Speed
+
+## Daily Temp
 ```{python}
 
-import altair as alt
-from meteostat import Hourly
+from Tables_code import get_geo_feature_temperature, chart_geo_feature_temperature
 
-geo_cities = {
-    "Great Lakes (Chicago, IL)": (41.8781, -87.6298),
-    "Coastal (Miami, FL)": (25.7617, -80.1918),
-    "Mountains (Denver, CO)": (39.7392, -104.9903),
-    "Desert (Phoenix, AZ)": (33.4484, -112.0740),
-    "Volcanic Islands (Honolulu, HI)": (21.3069, -157.8583),
-    "Appalachian (Pittsburgh, PA)": (40.4406, -79.9959)
-}
-
-geo_records = []
-
-for feature, (lat, lon) in geo_cities.items():
-    point = Point(lat, lon)
-    df = Hourly(point, datetime.datetime(2024, 1, 1), datetime.datetime(2024, 12, 31)).fetch()
-
-    if not df.empty and "wspd" in df.columns:
-        df["wspd_kmh"] = df["wspd"] * 3.6
-        # use 'temp' for temperature
-        if "temp" in df.columns:
-            df["temp_c"] = df["temp"]
-        else:
-            df["temp_c"] = np.nan
-
-        df["date"] = df.index.date
-        daily_avg = (
-            df.groupby("date")[["wspd_kmh", "temp_c"]]
-            .mean()
-            .reset_index()
-        )
-        daily_avg["Feature"] = feature
-        geo_records.append(daily_avg)
-
-geo_all = pd.concat(geo_records, ignore_index=True)
-
-geo_summary = (
-    geo_all.groupby(["date", "Feature"])[["wspd_kmh", "temp_c"]]
-    .mean()
-    .reset_index()
-)
-
-geo_summary["date"] = pd.to_datetime(geo_summary["date"])
-
-# --- Temperature Chart ---
-temp_chart = (
-    alt.Chart(geo_summary.dropna(subset=["temp_c"]))
-    .mark_line()
-    .encode(
-        x=alt.X("date:T", title="Date (2024)"),
-        y=alt.Y("temp_c:Q", title="Avg Temperature (°C)"),
-        color=alt.Color("Feature:N", legend=alt.Legend(title="Geographic Feature")),
-        tooltip=["Feature", "temp_c"]
-    )
-    .properties(
-        title="Average Daily Temperature by Geographic Feature (2024)",
-        width=800,
-        height=350
-    )
-)
-
-# --- Wind Chart ---
-wind_chart = (
-    alt.Chart(geo_summary)
-    .mark_line()
-    .encode(
-        x=alt.X("date:T", title="Date (2024)"),
-        y=alt.Y("wspd_kmh:Q", title="Avg Daily Wind Speed (km/h)"),
-        color=alt.Color("Feature:N", legend=alt.Legend(title="Geographic Feature")),
-        tooltip=["Feature", "wspd_kmh"]
-    )
-    .properties(
-        title="Average Daily Wind Speed by Geographic Feature (2024)",
-        width=800,
-        height=350
-    )
-)
-
-
-geo_chart = alt.vconcat(temp_chart, wind_chart).resolve_scale(color="independent")
-geo_chart
+df = get_geo_feature_temperature()
+chart = chart_geo_feature_temperature(df)
+chart
 ```
 
 ## Wind By City Map
