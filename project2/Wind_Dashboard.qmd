@@ -1,5 +1,5 @@
 ---
-title: "Wind Dashboard - Phase 2"
+title: "Wind Dashboard - Phase 3"
 format:
   dashboard:
     theme: yeti
@@ -439,7 +439,7 @@ wind_df["day_of_year"]= wind_df["time"].dt.day_of_year
 generate_cities_map(cities, wind_df)
 
 ```
-
+click points on the map to see the 2024 wind speeds for a given city. (Shift + click to select multiple cities to compare).
 :::
 
 
@@ -473,7 +473,8 @@ tornado = get_tornado_data()
 generate_tornado_map(tornado)
 
 ```
-
+click points on the map to see the wind speeds for the week surrounding a tornado (Shift+ click to select multiple tornados to compare).\\
+the catagories are based on the Enhanced Fujita (EF) Scale: EF0 (65-85 mph), EF1 (86-110 mph), EF2 (111-135 mph), EF3 (136-165 mph), EF4 (166-200 mph), and EF5 (>200 mph). Our data visualizations does not seem exactly match with what we would expect to see. We Suspect the reasons for this may include the following: Tornados are categorized by peak wind speed rather than average wind speed; The wind speed is the wind speed at the closest weather station and the distance between stations and tornados can vary greatly; Tornados radius can vary greatly.                      
 :::
 
 ---

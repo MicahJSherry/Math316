@@ -293,11 +293,11 @@ def get_tornado_data():
                     data["magnitude"] = magnitude
                     data["lat"] = lat
                     data["lon"] = lon
-
+                    data["time_delta"] = (data["time"] - tornado_time).dt.total_seconds() / (3600) # gets time delta in hours
                     # Keep only relevant columns
                     data = data[[
                         "tornado_number", "state", "magnitude", "lat", "lon",
-                        "time", "wspd", "wdir"
+                        "time","time_delta", "wspd", "wdir"
                     ]]
                     all_data.append(data)
                 #else:
@@ -316,7 +316,7 @@ def get_tornado_data():
 
         result = pd.concat(all_data, ignore_index=True)
         result["day_of_year"] = result["time"].dt.day_of_year
-
+        
         return result
     tornado = get_tornado_weekly_wind(case_study)
     return tornado
@@ -339,29 +339,32 @@ def generate_tornado_map(tornado):
     # HOURLY WIND DATA
     # --------------------------------
     # No grouping, keep each hourly record
-    hourly_wind = tornado[['tornado_number', 'time', 'wspd']].copy()
+    hourly_wind = tornado[['tornado_number', 'time','time_delta', 'wspd',"magnitude",'lat','lon']].copy()
     hourly_wind = hourly_wind.rename(columns={'wspd': 'wind_speed'})
+    hourly_wind['wind_speed'] = hourly_wind['wind_speed'] * 0.621371 # convert to mph    
 
     # --------------------------------
     # INTERACTIVE SELECTION
     # --------------------------------
-    brush = alt.selection_point(fields=['tornado_number'])
-
+    geographic_brush  = alt.selection_point(fields=['tornado_number'])
+    
     # U.S. map base layer
     us_states = alt.topo_feature(data.us_10m.url, feature='states')
 
     base_map = alt.Chart(us_states).mark_geoshape(
         fill="#f0f0f0", stroke='black'
-    ).project("albersUsa").properties(width=900, height=450)
+    ).project("albersUsa").properties(width=600, height=300)
 
     # Tornado starting points
     points = alt.Chart(df).mark_circle(size=200, opacity=0.8).encode(
         longitude='lon:Q',
         latitude='lat:Q',
         color=alt.Color('magnitude:N'),
-        tooltip=['tornado_number:N', 'state:N', 'magnitude:Q']
+        tooltip=['tornado_number:N', 'state:N', 'magnitude:Q'],
+        opacity=alt.condition(geographic_brush, 
+                          alt.value(0.8), alt.value(0.4))
     ).add_params(
-        brush
+        geographic_brush
     )
 
     map_layer = base_map + points
@@ -369,15 +372,23 @@ def generate_tornado_map(tornado):
     # --------------------------------
     # HOURLY LINE CHART (Filtered by Selection)
     # --------------------------------
+    
     wind_chart = alt.Chart(hourly_wind).mark_line(point=True).encode(
-        x=alt.X('time:T', title='Time'),
-        y=alt.Y('wind_speed:Q', title='Wind Speed (m/s)'),
-        color='tornado_number:N',
-        tooltip=['tornado_number:N', 'time:T', 'wind_speed:Q']
+        x=alt.X('time_delta',
+            title='Time from tornado start',
+            axis=alt.Axis(labelExpr="floor(datum.value/24) + 'd ' + floor(datum.value%24) + 'h'"),
+            scale=alt.Scale(domain=[-3*24, 3*24])
+        ),
+        y=alt.Y('wind_speed:Q', title='Wind Speed (mph)'),
+        color=alt.Color('magnitude:N'),
+        detail='tornado_number:N',
+        tooltip=['tornado_number:N', 'time:T', 'wind_speed:Q'],
+        opacity=alt.value(0.6), 
     ).transform_filter(
-        brush
-    ).properties(
-        width=900,
+        geographic_brush
+
+        ).properties(
+        width=650,
         height=300,
         title='Hourly Wind Speed (Filtered by Tornado Selection)'
     )
@@ -385,10 +396,9 @@ def generate_tornado_map(tornado):
     # --------------------------------
     # FINAL DASHBOARD
     # --------------------------------
-    final_chart = alt.vconcat(map_layer, wind_chart).resolve_scale(color='independent')
+    final_chart = alt.hconcat(map_layer, wind_chart).resolve_scale()
 
     return final_chart
-
 
 def get_hourly_wind(cities: dict, start: datetime.datetime, end: datetime.datetime) -> pd.DataFrame:
     """
@@ -416,6 +426,7 @@ def get_hourly_wind(cities: dict, start: datetime.datetime, end: datetime.dateti
                 data['city'] = city
                 # keep only relevant columns
                 data = data[['city', 'time', 'wspd', 'wdir']]
+                
                 all_data.append(data)
             #else:
                 #print(f"⚠️ No data for {city}")
@@ -445,6 +456,7 @@ def generate_cities_map(cities,wind_df):
         .mean()
         .rename(columns={'wspd': 'wind_speed'})
     )
+    daily_avg['wind_speed'] = daily_avg['wind_speed'] * 0.621371 # convert to mph
     #print(daily_avg)
     #print(data)
 
@@ -455,14 +467,17 @@ def generate_cities_map(cities,wind_df):
     world = alt.topo_feature(data.us_10m.url, feature='states')
     base_map = alt.Chart(world).mark_geoshape(
         fill="#f0f0f0", stroke='black'
-    ).project("albersUsa").properties(width=900, height=450)
+    ).project("albersUsa").properties(width=600, height=300)
+
 
     # City points with selection
     points = alt.Chart(df).mark_circle(size=200, opacity=0.8).encode(
         longitude='lon:Q',
         latitude='lat:Q',
         color='city:N',
-        tooltip=['city:N']
+        tooltip=['city:N'],
+        opacity=alt.condition(brush, 
+                          alt.value(0.8), alt.value(0.4))
     ).add_params(
         brush
     )
@@ -471,19 +486,20 @@ def generate_cities_map(cities,wind_df):
 
     # Wind line chart filtered by selected cities
     wind_chart = alt.Chart(daily_avg).mark_line().encode(
-        x='day_of_year:Q',
-        y='wind_speed:Q',
+        x=alt.X('day_of_year:Q',scale=alt.Scale(domain=[0,366])),
+        y=alt.Y('wind_speed:Q', title='Wind Speed (mph)'),
         color='city:N',
-        tooltip=['city:N', 'day_of_year:Q', 'wind_speed:Q']
+        tooltip=['city:N', 'day_of_year:Q', 'wind_speed:Q'],
+        opacity= alt.value(0.6)
     ).transform_filter(
         brush
     ).properties(
-        width=900,
+        width=650,
         height=300,
         title='Daily Average Wind Speed by City (Filtered by Map Selection)'
     )
 
-    final_chart = alt.vconcat(map_layer, wind_chart)
+    final_chart = alt.hconcat(map_layer, wind_chart)
     return final_chart
 
 
