@@ -153,6 +153,8 @@ chart
 ## Wind By City Map
 ```{python}
 import datetime
+import altair as alt
+alt.data_transformers.enable('json')
 from Tables_code import get_hourly_wind, generate_cities_map
 cities = {
     
