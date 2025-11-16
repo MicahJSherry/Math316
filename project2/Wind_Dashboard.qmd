@@ -32,6 +32,9 @@ Exploring daily wind data using the Meteostat
 
 **Dataset Type:** Aggregated weather observations per station  
 
+- **Tornado Data Source:**  [FEMA Tornado Tracks Dataset](https://gis-fema.hub.arcgis.com/datasets/e75412d18bdc469dbf89bf7e929475cc/explore)  
+
+
 **Key Variables**
 
 - `wspd`: Average wind speed (mph)  
@@ -229,7 +232,7 @@ tornado = get_tornado_data()
 generate_tornado_map(tornado)
 
 ```
-click points on the map to see the wind speeds for the week surrounding a tornado (Shift+ click to select multiple tornados to compare).\\
+click points on the map to see the wind speeds for the week surrounding a tornado (Shift+ click to select multiple tornados to compare). <br />
 the catagories are based on the Enhanced Fujita (EF) Scale: EF0 (65-85 mph), EF1 (86-110 mph), EF2 (111-135 mph), EF3 (136-165 mph), EF4 (166-200 mph), and EF5 (>200 mph). Our data visualizations does not seem exactly match with what we would expect to see. We Suspect the reasons for this may include the following: Tornados are categorized by peak wind speed rather than average wind speed; The wind speed is the wind speed at the closest weather station and the distance between stations and tornados can vary greatly; Tornados radius can vary greatly.                      
 :::
 
