@@ -170,15 +170,47 @@ evaluate(boost_model, "HistGradientBoostingRegressor")
 :::
 ---
 
-# Micah
+# Greater Pittsburgh International Airport
 ::: {.panel-tabset}
+## overview
 
-## NAME_ME
-```{python}
+the features used to predict the weather are the wind speed and direction for the following weather stations 
 
-# CODE
+- Allegheny County Airport
+- Butler / Brownsdale
+- Washington / Lagonda
+- Zelienople / Old Furnace
+-  Beaver Falls / West Mayfield
+
+the values we are trying to predict is the wind speed and direction for Greater Pittsburgh International Airport
+
+the model got the folowing metrics on the test set.      
+
+- R²: 0.620057846963885
+- RMSE: 54.6469878681952
+
+see the last code cell to see a visualization of the predicted vs actual wind speed.
+
+potential improvements:
+
+- convert wind vector from angle and speed to its north-south and east-west components.
+- change more complex model.
+- predict more locations (given there closest stations)
+- add more features 
+
+---
+
+## visuals  
+```{python} 
+from models import get_data, train_model, visualize_predictions
+
+X, y, stations = get_data()
+y_test, y_pred = train_model(X, y)
+
+visualize_predictions(y_test, y_pred, stations)
 
 ```
+
 :::
 ---
 
