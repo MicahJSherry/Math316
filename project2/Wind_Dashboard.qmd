@@ -111,6 +111,22 @@ cities_by_region = {
 :::
 ---
 
+# Models
+::: {.panel-tabset}
+
+## Linear Model  
+```{python} 
+from models import get_data, train_model, visualize_predictions
+
+X, y, stations = get_data()
+y_test, y_pred = train_model(X, y)
+
+visualize_predictions(y_test, y_pred, stations)
+
+```
+:::
+---
+
 # Regional Wind Table
 ::: {.panel-tabset}
 
@@ -205,6 +221,8 @@ click points on the map to see the 2024 wind speeds for a given city. (Shift + c
 
 
 ---
+
+
 
 # Interactive Feature Explorer
 
