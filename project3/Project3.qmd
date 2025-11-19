@@ -1,0 +1,189 @@
+---
+title: "Wind Dashboard - Project 3 | Phase 1"
+format:
+  dashboard:
+    theme: yeti
+    pages: true
+    orientation: columns
+    embed-resources: true
+    standalone: true
+---
+
+# Overview
+::: {.panel-tabset}
+
+## Comparative Wind Patterns Across U.S. Regions
+Exploring wind data using the Meteostat
+
+**Group Members:** Travis, Ira, Micah
+
+**Course:** Data Science 
+
+**Goal:** Use ML models to predict wind trends in distinct U.S. regions 
+
+:::
+---
+
+# Data & Methods
+::: {.panel-tabset}
+
+## Data Source
+**Source:** [Meteostat Python API](https://dev.meteostat.net/python/daily.html)  
+
+**Dataset Type:** Aggregated weather observations per station  
+
+**Key Variables**
+
+- `wspd`: Average wind speed (mph)  
+- `wdir`: Mean wind direction (degrees)  
+
+**Time Period:** 2024  
+
+**Models:** Wind Speed, Wind Direction, Locations  
+
+**Frame:** Hourly and Daily  
+
+:::
+---
+
+# Wind Speed Model
+::: {.panel-tabset}
+
+## Linear Regression & HistGradientBoostingRegressor Models
+```{python}
+
+import pandas as pd
+import numpy as np
+from meteostat import Stations, Hourly
+import datetime
+
+# ML imports
+from sklearn.model_selection import TimeSeriesSplit, cross_val_score
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+
+start = datetime.datetime(2024, 1, 1)
+end   = datetime.datetime(2024, 12, 31)
+
+print("Using Pittsburgh station")
+
+stations = (
+    Stations()
+    .nearby(40.4406, -79.9959)
+    .fetch(10)
+)
+
+df = pd.DataFrame()
+selected_station = None
+
+for station_id in stations.index:
+    attempt = Hourly(station_id, start, end).fetch()
+
+    if len(attempt) > 0:
+        df = attempt
+        selected_station = station_id
+        break
+    else:
+        print("No data availbable")
+
+print("\nMissing Values")
+print(df.isna().sum())
+
+df["hour"] = df.index.hour
+df["month"] = df.index.month
+
+df["wspd_lag1"] = df["wspd"].shift(1)
+df["wspd_lag3"] = df["wspd"].shift(3)
+df["wspd_lag6"] = df["wspd"].shift(6)
+
+df = df.dropna(subset=["wspd", "wspd_lag1", "wspd_lag3", "wspd_lag6"])
+
+print("\nLagged 1, 3, and 6 hours before")
+
+feature_cols = [
+    "temp", "dwpt", "pres", "rhum", "wdir",
+    "hour", "month",
+    "wspd_lag1", "wspd_lag3", "wspd_lag6"
+]
+
+X = df[feature_cols]
+y = df["wspd"]
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ("num", Pipeline([
+            ("impute", SimpleImputer(strategy="mean")),
+            ("scale", StandardScaler())
+        ]), feature_cols)
+    ]
+)
+
+linear_model = Pipeline([
+    ("prep", preprocessor),
+    ("lr", LinearRegression())
+])
+
+boost_model = Pipeline([
+    ("prep", preprocessor),
+    ("hgb", HistGradientBoostingRegressor(
+        max_depth=5,
+        learning_rate=0.05
+    ))
+])
+
+n_splits = min(5, max(2, len(df) // 500))
+
+print(f"\nTimeSeriesSplit with n_splits = {n_splits}")
+tscv = TimeSeriesSplit(n_splits=n_splits)
+
+
+def evaluate(model, name):
+    mae = -cross_val_score(model, X, y, cv=tscv, scoring="neg_mean_absolute_error").mean()
+    rmse = np.sqrt(-cross_val_score(model, X, y, cv=tscv, scoring="neg_mean_squared_error").mean())
+    r2 = cross_val_score(model, X, y, cv=tscv, scoring="r2").mean()
+
+    print(f"\n{name}")
+    print(f"MAE:  {mae:.3f}")
+    print(f"RMSE: {rmse:.3f}")
+    print(f"R²:   {r2:.3f}")
+
+evaluate(linear_model, "Linear Regression")
+evaluate(boost_model, "HistGradientBoostingRegressor")
+
+```
+:::
+---
+
+# Ira
+::: {.panel-tabset}
+
+## NAME_ME
+```{python}
+
+# CODE
+
+```
+:::
+---
+
+# Micah
+::: {.panel-tabset}
+
+## NAME_ME
+```{python}
+
+# CODE
+
+```
+:::
+---
+
+# Research Questions
+
+1. How do wind patterns change by region?  
+2. What are some case studies of extreme weather?  
+3. How do geographical features (lakes, oceans, mountains, deserts, plains) impact wind patterns?  
