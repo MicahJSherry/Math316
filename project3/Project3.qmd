@@ -156,25 +156,52 @@ evaluate(boost_model, "HistGradientBoostingRegressor")
 
 ```
 :::
+
 ---
 
-# Ira
+# Predicting Wind Direction
 ::: {.panel-tabset}
+## Training & Results
 
-## NAME_ME
-```{python}
+**5 cities examined**
 
-# CODE
+Chicago, Denver, Miami, Phoenix, Seattle
 
-```
+**Target Variable**
+
+Wind direction (degrees)
+
+**Training features**
+
+- **Numerical:** temp, dwpt, rhum, pres, wpsd, latitude, longitude, elevation  
+- **Categorical:** City  
+- **Modified:** hour_sin(N), hour_cos(N), month_sin(N), month_cos(N), condition_group(C)  
+- **Excluded:** tsun, snow, wpgt, prcp
+
+**Model Procedures**
+
+- Hourly data sample from 2020-2024 on all cities  
+- 80% train/20% test random split  
+- StandardScaler() used on Numerical values  
+- OneHotEncoder() used on Categorical values
+
+**Results**
+
+- Linear Regression Model: R² = 0.329  
+- HistGradientBoosting Model: R² = 0.631  
+
+*See visuals for further model comparisons
+
 :::
+
 ---
 
 # Greater Pittsburgh International Airport
 ::: {.panel-tabset}
-## overview
 
-the features used to predict the weather are the wind speed and direction for the following weather stations 
+## Overview
+
+The features used to predict the weather are the wind speed and direction for the following weather stations:
 
 - Allegheny County Airport
 - Butler / Brownsdale
@@ -196,26 +223,51 @@ potential improvements:
 - convert wind vector from angle and speed to its north-south and east-west components.
 - change more complex model.
 - predict more locations (given there closest stations)
-- add more features 
+- add more features
+
+:::
 
 ---
 
-## visuals  
-```{python} 
+# Visuals
+
+::: {.panel-tabset}
+
+## Pittsburgh Area Model
+
+```{python}
+#| echo: false
 from models import get_data, train_model, visualize_predictions
 
 X, y, stations = get_data()
 y_test, y_pred = train_model(X, y)
 
-visualize_predictions(y_test, y_pred, stations)
+chart = visualize_predictions(y_test, y_pred, stations)
+chart
+```
 
+## Wind Direction Model
+
+```{python}
+#| echo: false
+from models import make_wind_model_charts
+
+charts = make_wind_model_charts()
+charts
 ```
 
 :::
+
 ---
 
 # Research Questions
 
+::: {.panel-tabset}
+
+## Key Questions
+
 1. How do wind patterns change by region?  
 2. What are some case studies of extreme weather?  
-3. How do geographical features (lakes, oceans, mountains, deserts, plains) impact wind patterns?  
+3. How do geographical features (lakes, oceans, mountains, deserts, plains) impact wind patterns?
+
+:::  
