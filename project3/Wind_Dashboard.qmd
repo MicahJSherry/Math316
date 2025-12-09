@@ -212,17 +212,33 @@ generate_tornado_map(tornado)
 ::: {.panel-tabset}
 
 ## Pittsburgh Area Model
+the Goal of this model is to predict wind vectors at the following International Airports:
+
+- Pittsburgh International Airport (PIT) – 40.4406, -79.9959
+- Los Angeles International Airport (LAX) – 33.9425, -118.4081
+- Miami International Airport (MIA) – 25.7959, -80.2870
+- Denver International Airport (DEN) – 39.8617, -104.6731
+- Chicago O’Hare International Airport (ORD) – 41.9742, -87.9073
+- Seattle-Tacoma International Airport (SEA) – 47.4502, -122.3088  
+
+the features used to predict this are the locations and wind vectors associated with the 5 closest stations
+
+We got the following recorded the following metrics on the test set:
+
+- R²: 0.7408853538672449
+- RMSE: 5.428108009372506
 
 ```{python}
 #| echo: false
 from models import get_data, train_model, visualize_predictions
 
-X, y, stations = get_data()
-y_test, y_pred = train_model(X, y)
+data, stations = get_data()
+station_test, y_test, y_pred = train_model(data)
 
-chart = visualize_predictions(y_test, y_pred, stations)
+chart = visualize_predictions(station_test, y_test, y_pred, stations)
 chart
 ```
+
 
 ## Classification Model
 
