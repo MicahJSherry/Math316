@@ -9,29 +9,84 @@ format:
     standalone: true
 ---
 
+<style>
+
+.nav-tabs > li > a {
+    background-color: #e8f4ff;       
+    border-radius: 8px;
+    margin-right: 8px;
+    padding: 8px 16px;
+    color: #005c99 !important;   
+    font-weight: 600;
+    border: 1px solid #bcdcff;
+    transition: 0.2s;
+}
+
+.nav-tabs > li > a:hover {
+    background-color: #bfe6ff;
+    color: #004d80 !important;
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover {
+    background-color: #0094d9 !important;
+    color: white !important;
+    border: 1px solid #007db3 !important;
+}
+
+.nav-tabs {
+    padding: 10px 12px;
+    background-color: #f2faff;
+    border-radius: 8px;
+    border: none;
+}
+
+</style>
+
+<style>
+.note-box {
+  background: #f7fbff;
+  padding: 14px 18px;
+  border-left: 4px solid #0094d9;
+  border-radius: 8px;
+  margin-left: 20px;
+  font-size: 15px;
+  line-height: 1.5;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.section-with-note {
+  display: flex;
+  gap: 25px;
+  align-items: flex-start;
+}
+</style>
+
+
+
 # Overview
 ::: {.panel-tabset}
 
-## Data
+## Project Summary
+**Group Members:** Travis, Ira, Micah
+
+<b>Goal:</b> This dashboard presents a multi-regional study of U.S. weather behavior in 2024.   
+It combines exploratory weather analysis, geographical mapping, and predictive modeling, including a classification machine-learning model.
+
 Exploring wind data using the Meteostat Python API:
 
 **Source:** [Meteostat Python API](https://dev.meteostat.net/python/daily.html) 
 
-**Group Members:** Travis, Ira, Micah
+**Time Period:** 2024  
 
-**Course:** Data Science 
+**Frame:** Hourly and Daily 
 
-**Goal:** Use ML models to predict wind trends in distinct U.S. regions 
 
 **Key Variables**
 
 - `wspd`: Average wind speed (mph)  
-- `wdir`: Mean wind direction (degrees)  
-- `coco`: Condition Code
-
-**Time Period:** 2024  
-
-**Frame:** Hourly and Daily  
+- `wdir`: Mean wind direction (degrees) 
+- `temp`: Temperature (°F) 
+- `coco`: Condition code 
 
 :::
 ---
@@ -100,13 +155,41 @@ table
 ```
 
 ## Daily Wind Speed
-```{python}
 
+```{python}
 from Tables_code import get_regional_daily_wind, chart_regional_daily_wind
+import pandas as pd
+import altair as alt
 
 df = get_regional_daily_wind()
-chart = chart_regional_daily_wind(df)
-chart
+base_chart = chart_regional_daily_wind(df)
+
+findings_df = pd.DataFrame({
+    "line": [
+        "Key Findings:",
+        "- Northeast: Highest wind speeds",
+        "- West: Lowest average wind speed",
+        "- Southeast & West are lower while Northeast & Midwest are higher"
+    ],
+    "y": [0, 1, 2, 3]
+})
+
+findings_text = (
+    alt.Chart(findings_df)
+    .mark_text(align="left", baseline="top", fontSize=13, color="#003366")
+    .encode(
+        text="line:N",
+        y=alt.Y("y:O", axis=None)
+    )
+    .properties(width=10, height=100)
+)
+
+final_chart = alt.hconcat(base_chart, findings_text).configure_view(
+    stroke=None      # removes the border box cleanly
+)
+
+final_chart
+
 ```
 
 
@@ -239,7 +322,6 @@ chart = visualize_predictions(station_test, y_test, y_pred, stations)
 chart
 ```
 
-
 ## Classification Model
 
 ```{python}
@@ -251,9 +333,18 @@ chart
 
 # Research Questions
 
-1. How do weather patterns change by region?
+<div style="display:flex; flex-direction:column; gap:18px;">
 
-2. What are some case studies of extreme weather?
+<div style="padding:16px; border-radius:10px; background:#f5faff; border:1px solid #cfe3f7;">
+<b>1.</b> How do weather patterns change by region?
+</div>
 
-3. How do geographical features (lakes, oceans, mountains, deserts, plains) impact weather patterns?
+<div style="padding:16px; border-radius:10px; background:#f5faff; border:1px solid #cfe3f7;">
+<b>2.</b> What are some case studies of extreme weather?
+</div>
 
+<div style="padding:16px; border-radius:10px; background:#f5faff; border:1px solid #cfe3f7;">
+<b>3.</b> How do geographical features (lakes, oceans, mountains, deserts, plains) impact weather patterns?
+</div>
+
+</div>
