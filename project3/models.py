@@ -10,7 +10,10 @@ from vega_datasets import data
 
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score, mean_squared_error
+from sklearn.metrics import r2_score, mean_squared_error, accuracy_score, confusion_matrix
+from sklearn.preprocessing import LabelEncoder
+from sklearn.utils.class_weight import compute_class_weight
+from xgboost import XGBClassifier
 import numpy as np
 
 def get_data():
@@ -525,3 +528,411 @@ def make_wind_model_charts():
     )
 
     return alt.hconcat(linear_chart, hist_chart)
+
+
+def weather_classification_model(visual_type="confusion_matrix", random_state=42):
+    """
+    Weather Classification Model with XGBoost
+    
+    Parameters:
+    visual_type (str): Type of visual to return
+                      - "confusion_matrix": Confusion matrix heatmap
+                      - "feature_importance": Feature importance bar chart  
+                      - "geographic_performance": Map of city performance
+                      - "station_map": Map of all weather stations
+    random_state (int): Random state for reproducibility
+    
+    Returns:
+    altair.Chart: The requested visualization
+    """
+    from xgboost import XGBClassifier
+    from sklearn.preprocessing import LabelEncoder
+    from sklearn.metrics import accuracy_score, confusion_matrix
+    from sklearn.utils.class_weight import compute_class_weight
+    
+    # Data collection
+    stations = Stations()
+    stations = stations.nearby(40.4406, -79.9959)
+    stations = stations.fetch()
+    
+    all_stations = stations[stations["country"]=="US"].sample(50, random_state=random_state)
+    train_stations = all_stations.sample(40, random_state=random_state)
+    test_stations = all_stations.drop(train_stations.index)
+    
+    data = Hourly(all_stations, datetime.datetime(2024, 1, 1), datetime.datetime(2024, 12, 31))
+    data = data.fetch()
+    data = data.drop(columns=["tsun", "snow", "prcp","wpgt"])
+    
+    # Data preprocessing
+    data = data.copy()
+    data.index = data.index.set_levels(pd.to_datetime(data.index.levels[1]), level=1)
+    data = data.sort_index(level=["station", "time"])
+    
+    # Feature engineering
+    data = data.sort_index()
+    data['pres_change'] = data.groupby(level='station')['pres'].diff()
+    data['rhum_change'] = data.groupby(level='station')['rhum'].diff()
+    data['wspd_change'] = data.groupby(level='station')['wspd'].diff()
+    data['pres_rhum_ratio'] = data['pres'] / (data['rhum'] + 0.01)
+    data['wspd_rhum_product'] = data['wspd'] * data['rhum']
+    data['pres_wspd_ratio'] = data['pres'] / (data['wspd'] + 0.01)
+    data['rhum_squared'] = data['rhum'] ** 2
+    data['wspd_squared'] = data['wspd'] ** 2
+    data['pres_deviation'] = np.abs(data['pres'] - data['pres'].mean())
+    data['rhum_extreme'] = np.where(data['rhum'].fillna(0) > 90, 1, 0)
+    data['low_pressure'] = np.where(data['pres'].fillna(data['pres'].mean()) < data['pres'].quantile(0.1), 1, 0)
+    data['high_wind'] = np.where(data['wspd'].fillna(0) > data['wspd'].quantile(0.9), 1, 0)
+    data['pressure_trend'] = data.groupby(level='station')['pres'].rolling(3, min_periods=1).mean().reset_index(0, drop=True)
+    data['humidity_volatility'] = data.groupby(level='station')['rhum'].rolling(3, min_periods=1).std().reset_index(0, drop=True).fillna(0)
+    data['wind_consistency'] = data.groupby(level='station')['wspd'].rolling(3, min_periods=1).std().reset_index(0, drop=True).fillna(0)
+    data['temp_change'] = data.groupby(level='station')['temp'].diff()
+    data['dwpt_change'] = data.groupby(level='station')['dwpt'].diff()
+    data['temp_dwpt_spread'] = data['temp'] - data['dwpt']
+    data['heat_index'] = data['temp'] + 0.5 * (data['rhum'] / 100) * (data['temp'] - 14.5)
+    data['temp_extreme_hot'] = np.where(data['temp'].fillna(data['temp'].mean()) > data['temp'].quantile(0.9), 1, 0)
+    data['temp_extreme_cold'] = np.where(data['temp'].fillna(data['temp'].mean()) < data['temp'].quantile(0.1), 1, 0)
+    data['temp_pres_ratio'] = data['temp'] / (data['pres'] / 1000 + 0.01)
+    data['temp_wspd_product'] = data['temp'] * data['wspd']
+    data['dwpt_rhum_ratio'] = data['dwpt'] / (data['rhum'] + 0.01)
+    data['temp_volatility'] = data.groupby(level='station')['temp'].rolling(3, min_periods=1).std().reset_index(0, drop=True).fillna(0)
+    data['dwpt_trend'] = data.groupby(level='station')['dwpt'].rolling(3, min_periods=1).mean().reset_index(0, drop=True)
+    data['temp_trend'] = data.groupby(level='station')['temp'].rolling(3, min_periods=1).mean().reset_index(0, drop=True)
+    data['comfort_index'] = 0
+    data['frost_risk'] = 0
+    data['condensation_risk'] = 0
+    
+    temp_valid = data['temp'].notna()
+    dwpt_valid = data['dwpt'].notna() 
+    rhum_valid = data['rhum'].notna()
+    
+    comfort_mask = temp_valid & rhum_valid & (data['temp'] >= 18) & (data['temp'] <= 24) & (data['rhum'] >= 30) & (data['rhum'] <= 70)
+    data.loc[comfort_mask, 'comfort_index'] = 1
+    
+    frost_mask = temp_valid & dwpt_valid & (data['temp'] <= 2) & (data['dwpt'] <= 0)
+    data.loc[frost_mask, 'frost_risk'] = 1
+    
+    condensation_mask = temp_valid & dwpt_valid & (np.abs(data['temp'] - data['dwpt']) <= 2)
+    data.loc[condensation_mask, 'condensation_risk'] = 1
+    
+    # Lag features
+    cols = list(data.columns)
+    cols.remove("coco")
+    
+    for lag in [1, 2, 3]:
+        lagged = data.groupby(level="station")[cols].shift(lag)
+        lagged.columns = [f"{c}_lag{lag}" for c in cols]
+        data = data.join(lagged)
+    
+    data = data.dropna()
+    
+    # Merge coordinates
+    data_reset = data.reset_index()
+    data_with_coords = data_reset.merge(
+        all_stations[['latitude', 'longitude', 'elevation']],
+        left_on='station',
+        right_index=True,
+        how='left'
+    )
+    data = data_with_coords.set_index(['station', 'time'])
+    
+    # Enhanced features
+    enhanced_data = data.copy()
+    time_data = enhanced_data.index.get_level_values('time')
+    
+    enhanced_data['hour'] = time_data.hour
+    enhanced_data['hour_sin'] = np.sin(2 * np.pi * enhanced_data['hour'] / 24)
+    enhanced_data['hour_cos'] = np.cos(2 * np.pi * enhanced_data['hour'] / 24)
+    enhanced_data['day_of_year'] = time_data.dayofyear
+    enhanced_data['season_sin'] = np.sin(2 * np.pi * enhanced_data['day_of_year'] / 365.25)
+    enhanced_data['season_cos'] = np.cos(2 * np.pi * enhanced_data['day_of_year'] / 365.25)
+    enhanced_data['month'] = time_data.month
+    enhanced_data['is_winter'] = ((enhanced_data['month'] == 12) | (enhanced_data['month'] <= 2)).astype(int)
+    enhanced_data['is_spring'] = ((enhanced_data['month'] >= 3) & (enhanced_data['month'] <= 5)).astype(int) 
+    enhanced_data['is_summer'] = ((enhanced_data['month'] >= 6) & (enhanced_data['month'] <= 8)).astype(int)
+    enhanced_data['is_fall'] = ((enhanced_data['month'] >= 9) & (enhanced_data['month'] <= 11)).astype(int)
+    
+    def saturation_vapor_pressure(temp_celsius):
+        return 0.6112 * np.exp((17.67 * temp_celsius) / (temp_celsius + 243.5))
+    
+    enhanced_data['sat_vapor_press'] = saturation_vapor_pressure(enhanced_data['temp'])
+    enhanced_data['actual_vapor_press'] = enhanced_data['sat_vapor_press'] * enhanced_data['rhum'] / 100
+    enhanced_data['vapor_pressure_deficit'] = enhanced_data['sat_vapor_press'] - enhanced_data['actual_vapor_press']
+    enhanced_data['wet_bulb_temp'] = enhanced_data['temp'] * np.arctan(0.151977 * (enhanced_data['rhum'] + 8.313659) ** 0.5) + np.arctan(enhanced_data['temp'] + enhanced_data['rhum']) - np.arctan(enhanced_data['rhum'] - 1.676331) + 0.00391838 * (enhanced_data['rhum'] ** 1.5) * np.arctan(0.023101 * enhanced_data['rhum']) - 4.686035
+    
+    def wind_chill(temp, wind_speed):
+        mask = temp <= 10
+        wc = np.full_like(temp, temp)
+        wc[mask] = 13.12 + 0.6215 * temp[mask] - 11.37 * (wind_speed[mask] ** 0.16) + 0.3965 * temp[mask] * (wind_speed[mask] ** 0.16)
+        return wc
+    
+    enhanced_data['wind_chill'] = wind_chill(enhanced_data['temp'], enhanced_data['wspd'])
+    
+    def heat_index(temp, humidity):
+        mask = temp >= 26
+        hi = np.full_like(temp, temp)
+        t = temp[mask]
+        h = humidity[mask]
+        hi[mask] = -42.379 + 2.04901523*t + 10.14333127*h - 0.22475541*t*h - 0.00683783*t*t - 0.05481717*h*h + 0.00122874*t*t*h + 0.00085282*t*h*h - 0.00000199*t*t*h*h
+        return hi
+    
+    enhanced_data['heat_index_advanced'] = heat_index(enhanced_data['temp'], enhanced_data['rhum'])
+    enhanced_data['mixing_ratio'] = 0.622 * enhanced_data['actual_vapor_press'] / (enhanced_data['pres'] - enhanced_data['actual_vapor_press'])
+    enhanced_data['potential_temp'] = enhanced_data['temp'] * (1000 / enhanced_data['pres']) ** 0.286
+    
+    def solar_elevation(lat, lon, datetime_utc):
+        lat = np.array(lat)
+        lon = np.array(lon) 
+        day_of_year = datetime_utc.dayofyear
+        hour_angle = 15 * (datetime_utc.hour - 12) + lon
+        declination = 23.45 * np.sin(np.radians(360 * (284 + day_of_year) / 365))
+        lat_rad = np.radians(lat)
+        decl_rad = np.radians(declination)
+        hour_rad = np.radians(hour_angle)
+        elevation = np.arcsin(np.sin(lat_rad) * np.sin(decl_rad) + np.cos(lat_rad) * np.cos(decl_rad) * np.cos(hour_rad))
+        return np.degrees(elevation)
+    
+    solar_elevations = []
+    for idx in enhanced_data.index:
+        station_id, timestamp = idx
+        lat = enhanced_data.loc[idx, 'latitude']
+        lon = enhanced_data.loc[idx, 'longitude'] 
+        elevation = solar_elevation(lat, lon, timestamp)
+        solar_elevations.append(elevation)
+    
+    enhanced_data['solar_elevation'] = solar_elevations
+    enhanced_data['is_daylight'] = (enhanced_data['solar_elevation'] > 0).astype(int)
+    enhanced_data['solar_intensity'] = np.maximum(0, np.sin(np.radians(enhanced_data['solar_elevation'])))
+    
+    def beaufort_scale(wind_speed):
+        conditions = [
+            wind_speed < 1, wind_speed < 5.5, wind_speed < 11.9, wind_speed < 19.3,
+            wind_speed < 28.7, wind_speed < 38.9, wind_speed < 49.9, wind_speed < 61.8,
+            wind_speed < 74.6, wind_speed < 88.1, wind_speed < 102.4, wind_speed < 117.4,
+        ]
+        choices = list(range(12))
+        return np.select(conditions, choices, default=12)
+    
+    enhanced_data['beaufort_scale'] = beaufort_scale(enhanced_data['wspd'])
+    enhanced_data['wind_power'] = enhanced_data['wspd'] ** 3
+    
+    # Remove storm conditions and group weather codes
+    enhanced_data = enhanced_data[~enhanced_data['coco'].isin([23, 24, 25, 26, 27])]
+    
+    def group_condition_codes(code):
+        if code in [1, 2]:
+            return "Clear"
+        elif code in [3, 4, 5, 6]:
+            return "Cloudy"
+        elif code in [7, 8, 9, 10, 11, 12, 13, 17, 18, 19, 20]:
+            return "Rain"
+        elif code in [14, 15, 16, 21, 22]:
+            return "Snow"
+    
+    enhanced_data["coco"] = enhanced_data['coco'].apply(group_condition_codes)
+    
+    # Model data preparation
+    model_data = enhanced_data.copy()
+    train_data = model_data[model_data.index.get_level_values('station').isin(train_stations.index)]
+    test_data = model_data[model_data.index.get_level_values('station').isin(test_stations.index)]
+    
+    X_train = train_data.drop('coco', axis=1)
+    y_train = train_data['coco']
+    X_test = test_data.drop('coco', axis=1)
+    y_test = test_data['coco']
+    
+    # Model training
+    label_encoder = LabelEncoder()
+    y_train_encoded = label_encoder.fit_transform(y_train)
+    y_test_encoded = label_encoder.transform(y_test)
+    
+    direct_weights = {
+        'Clear': 1.0,
+        'Cloudy': 1.25,  
+        'Rain': 10.0,
+        'Snow': 500.0
+    }
+    
+    class_weight_dict = {}
+    for i, class_name in enumerate(label_encoder.classes_):
+        class_weight_dict[i] = direct_weights[class_name]
+    
+    model = XGBClassifier(
+        n_estimators=1000, 
+        learning_rate=0.1, 
+        max_depth=6, 
+        random_state=random_state, 
+        n_jobs=1, 
+        eval_metric='mlogloss'
+    )
+    
+    sample_weights = np.array([class_weight_dict[y] for y in y_train_encoded])
+    model.fit(X_train, y_train_encoded, sample_weight=sample_weights)
+    
+    y_pred_encoded = model.predict(X_test)
+    y_pred = label_encoder.inverse_transform(y_pred_encoded)
+    accuracy = accuracy_score(y_test, y_pred)
+    
+    # Generate requested visualization
+    if visual_type == "station_map":
+        us_states = alt.topo_feature(data.us_10m.url, 'states')
+        base = (
+            alt.Chart(us_states)
+            .mark_geoshape(fill="#f0f0f0", stroke="black")
+            .project("albersUsa")
+        )
+        
+        points = (
+            alt.Chart(all_stations.reset_index())
+            .mark_circle(size=200, opacity=0.8)
+            .encode(
+                longitude="longitude:Q",
+                latitude="latitude:Q",
+                color="name:N",
+                tooltip=["name:N","id:N" , "longitude:Q", "latitude:Q"]
+            )
+        )
+        return (base + points).properties(
+            width=600,
+            height=400,
+            title="50 Weather Stations (40 Train + 10 Test)"
+        )
+    
+    elif visual_type == "feature_importance":
+        xgb_importance = pd.Series(model.feature_importances_, index=X_train.columns)
+        xgb_importance = xgb_importance.sort_values(ascending=False)
+        
+        importance_df = pd.DataFrame({
+            'feature': xgb_importance.head(15).index,
+            'importance': xgb_importance.head(15).values
+        })
+        
+        return alt.Chart(importance_df).mark_bar().encode(
+            x=alt.X('importance:Q', title='Feature Importance'),
+            y=alt.Y('feature:N', sort='-x', title='Feature'),
+            color=alt.Color('importance:Q', scale=alt.Scale(scheme='blues'), legend=None),
+            tooltip=['feature:N', alt.Tooltip('importance:Q', format='.4f')]
+        ).properties(
+            width=600,
+            height=400,
+            title='Top 15 Features - XGBoost Importance'
+        )
+    
+    elif visual_type == "confusion_matrix":
+        cm = confusion_matrix(y_test, y_pred)
+        cm_percent = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis] * 100
+        
+        cm_data = []
+        for i, true_label in enumerate(label_encoder.classes_):
+            for j, pred_label in enumerate(label_encoder.classes_):
+                cm_data.append({
+                    'True Label': true_label,
+                    'Predicted Label': pred_label,
+                    'Percentage': cm_percent[i, j],
+                    'Text': f'{cm_percent[i, j]:.1f}%'
+                })
+        
+        cm_df = pd.DataFrame(cm_data)
+        
+        heatmap = alt.Chart(cm_df).mark_rect().encode(
+            x=alt.X('Predicted Label:N', title='Predicted Label'),
+            y=alt.Y('True Label:N', title='True Label'),
+            color=alt.Color('Percentage:Q', 
+                           scale=alt.Scale(scheme='blues', domain=[0, 100]),
+                           title='Percentage (%)'),
+            tooltip=['True Label:N', 'Predicted Label:N', alt.Tooltip('Percentage:Q', format='.1f')]
+        ).properties(
+            width=400,
+            height=400,
+            title=f'XGBoost Confusion Matrix (Row Percentages) - Accuracy: {accuracy:.2%}'
+        )
+        
+        text = alt.Chart(cm_df).mark_text(
+            align='center',
+            baseline='middle',
+            fontSize=12,
+            fontWeight='bold'
+        ).encode(
+            x='Predicted Label:N',
+            y='True Label:N',
+            text='Text:N',
+            color=alt.condition(alt.datum.Percentage > 50, alt.value('white'), alt.value('black'))
+        )
+        
+        return heatmap + text
+    
+    elif visual_type == "geographic_performance":
+        test_data_with_stations = test_data.reset_index()
+        test_predictions = model.predict(X_test)
+        test_predictions = label_encoder.inverse_transform(test_predictions)
+        
+        city_performance = []
+        test_station_names = test_stations.index.tolist()
+        
+        for station_id in test_station_names:
+            station_mask = test_data_with_stations['station'] == station_id
+            station_indices = test_data_with_stations[station_mask].index
+            valid_indices = [i for i in station_indices if i < len(y_test)]
+            
+            if len(valid_indices) > 10:
+                station_y_true = y_test.iloc[valid_indices]
+                station_y_pred = test_predictions[valid_indices]
+                city_accuracy = accuracy_score(station_y_true, station_y_pred)
+                
+                city_performance.append({
+                    'station_id': station_id,
+                    'name': test_stations.loc[station_id, 'name'],
+                    'longitude': test_stations.loc[station_id, 'longitude'],
+                    'latitude': test_stations.loc[station_id, 'latitude'],
+                    'accuracy': city_accuracy,
+                    'samples': len(valid_indices)
+                })
+        
+        city_perf_df = pd.DataFrame(city_performance)
+        
+        us_states = alt.topo_feature(data.us_10m.url, 'states')
+        base_map = (
+            alt.Chart(us_states)
+            .mark_geoshape(fill="#f0f0f0", stroke="black")
+            .project("albersUsa")
+        )
+        
+        train_points = (
+            alt.Chart(train_stations.reset_index())
+            .mark_circle(size=100, opacity=0.6)
+            .encode(
+                longitude="longitude:Q",
+                latitude="latitude:Q",
+                color=alt.value("gray"),
+                tooltip=["name:N", "id:N"]
+            )
+        )
+        
+        test_points = (
+            alt.Chart(city_perf_df)
+            .mark_circle(size=300, opacity=0.9, stroke="black", strokeWidth=2)
+            .encode(
+                longitude="longitude:Q",
+                latitude="latitude:Q",
+                color=alt.Color("accuracy:Q", 
+                               scale=alt.Scale(scheme="viridis", domain=[0.4, 1.0]),
+                               title="XGBoost Accuracy"),
+                tooltip=[
+                    alt.Tooltip("name:N", title="City"),
+                    alt.Tooltip("accuracy:Q", title="XGBoost Accuracy", format=".3f"),
+                    alt.Tooltip("samples:Q", title="Test Samples"),
+                    alt.Tooltip("longitude:Q", title="Longitude", format=".2f"),
+                    alt.Tooltip("latitude:Q", title="Latitude", format=".2f")
+                ]
+            )
+        )
+        
+        return (base_map + train_points + test_points).properties(
+            width=800,
+            height=500,
+            title="XGBoost Model Performance: 40 Training Cities (Gray) + 10 Test Cities (Colored by Accuracy)"
+        ).resolve_scale(
+            color='independent'
+        )
+    
+    else:
+        raise ValueError(f"Unknown visual_type: {visual_type}. Choose from: 'confusion_matrix', 'feature_importance', 'geographic_performance', 'station_map'")
