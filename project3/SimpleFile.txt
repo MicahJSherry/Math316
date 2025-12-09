@@ -1,0 +1,15 @@
+Travis, Ira, Micah
+
+Points:
+
+1) Based on regions when measuring wind speed we found the Northeast to have the highest wind speeds. The West to have the lowest average wind speed. And overall the Southeast & West are lower while Northeast & Midwest are higher in average wind speed.
+2) Temperature changes by geographical features eg. Deserts are hotter while mountains are colder.
+3) The Midwest shows the strongest wind variability which allows for tornados compared to the West and Southeast based on recorded magnitude data.
+4) Our ability to predict wind vectors at nearby stations with quite decent accuracy. 
+5) Our ability to predict weather on condition code of classified categories.
+
+Questions:
+
+1) We believe a prospective employer would view our dashboard favorably. We have real-world messy weather data actively being recorded to show our experience. Clear visuals and processors to showcase our findings. We incorporated time-series trends, maps, tables, regional comparisons, ML models, and a visually pleasing dashboard. If the employer was computer science focused they would recognized the work put into it with well structured code, reuse of functions, clean-up files, and more. While if the employer was not tech savvy, these software engineering components would still help to provide clarity. Finally, we were able to present our findings elegantly through means of a "key findings" panel, a drop-down selection, a brush tool, a map, and many more interactive displays all while being able to answer our research questions.
+
+2) Polishing up the view was remarkable difficult. Using a .qmd file came with an astronomical amount of challenges where many features were straight up not able to be implemented or would clash with others. However, we were able to make use of some .css and .html styles to bring highlights to the dashboard. Firstly, the navigation tabs were turned into buttons with new colors, selection, and response when selected. Secondly, the research question tab was able to be revamped in a similar way so as to add color to an originally bland slide. Next, we improved visibility by placing two visuals side-by-side rather than underneath one another to reduce scrolling. Finally, we added in some text to help explain our findings. We would have liked to add more of these but surprisingly the amount of work to do something so simply was mind-breaking. Ultimately, we did a lot of polishing but there was still more that could be done such as shrinking other things, adding more notes, more overall visuals using .css, etc.
