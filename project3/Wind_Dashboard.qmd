@@ -321,6 +321,7 @@ station_test, y_test, y_pred = train_model(data)
 chart = visualize_predictions(station_test, y_test, y_pred, stations)
 chart
 ```
+:::
 
 ---
 
@@ -330,38 +331,42 @@ chart
 
 ## Overview
 
-### **Model Objective**
-This model predicts weather condition codes using an extensive batch of features.
+**Model Objective**
+- This model predicts weather condition codes using an extensive batch of features.
 
-### **Condition Code Classifications**
+**Condition Code Groupings**
+
 - **Clear**: Condition codes 1-2 (Fair weather, clear skies)
 - **Cloudy**: Condition codes 3-6 (Cloudy, overcast, foggy conditions)  
-- **Rain**: Condition codes 7-13, 17-20 (Various precipitation types including drizzle, rain, thunderstorms)
+- **Rain**: Condition codes 7-13, 17-20 (Various precipitation types including drizzle, rain, heavy rain)
 - **Snow**: Condition codes 14-16, 21-22 (Snow, sleet, freezing precipitation)
 
 *Note: Storm conditions (codes 23-27) were excluded due to extreme rarity in the dataset*
 
-### **Model Construction**
+
+
+**Model Construction**
+
 - **Algorithm**: **XGBoost Classifier** (selected after comparison with Random Forest and Logistic Regression)
 - **City-based splitting** 40 training cities tested blindly on 10 test cities
 - **Features**: **172 engineered features** including:
-  - **Interaction terms**: Temperature-pressure ratios, wind-humidity products
-  - **Lag features**: 1, 2, and 3-hour historical weather data
+  - **Interaction terms**: Temperature-pressure ratios, wind-humidity products, etc
+  - **Lag features**: 1, 2, and 3-hour time lag on weather data
   - **Differential terms**: Pressure changes, humidity changes, wind speed variations
   - **Meteorological indices**: Heat index, wind chill, vapor pressure deficit
   - **Temporal features**: Seasonal cycles, solar elevation, daylight indicators
 - **Manual class weights** applied to address rain/snow underperformance:
-  - Clear: 1.0x | Cloudy: 1.25x | **Rain: 10.0x** | **Snow: 500.0x**
-  - This weighting strategy improved Rain and Snow detection rates but slightly reduced overall accuracy
+  - Clear: 1.5x | Cloudy: 3.0x | Rain: 20.0x | Snow: 325.0x
+  - This weighting improved Rain and Snow detection rates but slightly reduced overall accuracy
 
 ## Confusion Matrix
 
 ```{python}
 #| echo: false
-from models import weather_classification_model
+from chart_loader import load_weather_chart
 
-# Generate confusion matrix visualization
-confusion_chart = weather_classification_model(visual_type="confusion_matrix")
+# Load pre-rendered confusion matrix visualization
+confusion_chart = load_weather_chart(visual_type="confusion_matrix")
 confusion_chart
 ```
 
@@ -369,10 +374,10 @@ confusion_chart
 
 ```{python}
 #| echo: false
-from models import weather_classification_model
+from chart_loader import load_weather_chart
 
-# Generate feature importance visualization
-feature_chart = weather_classification_model(visual_type="feature_importance")
+# Load pre-rendered feature importance visualization
+feature_chart = load_weather_chart(visual_type="feature_importance")
 feature_chart
 ```
 
@@ -380,13 +385,12 @@ feature_chart
 
 ```{python}
 #| echo: false
-from models import weather_classification_model
+from chart_loader import load_weather_chart
 
-# Generate geographic performance visualization
-geo_chart = weather_classification_model(visual_type="geographic_performance")
+# Load pre-rendered geographic performance visualization
+geo_chart = load_weather_chart(visual_type="geographic_performance")
 geo_chart
 ```
-
 :::
 
 ---

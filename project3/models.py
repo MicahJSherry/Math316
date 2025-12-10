@@ -6,7 +6,7 @@ import datetime
 from great_tables import GT, md, style, loc
 
 import altair as alt
-from vega_datasets import data
+from vega_datasets import data as vega_datasets
 
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
@@ -162,7 +162,7 @@ def visualize_predictions(station_test, y_test, y_pred, stations):
     )
 
     # US map
-    us_states = alt.topo_feature(data.us_10m.url, "states")
+    us_states = alt.topo_feature(vega_datasets.us_10m.url, "states")
 
     base = (
         alt.Chart(us_states)
@@ -530,7 +530,7 @@ def make_wind_model_charts():
     return alt.hconcat(linear_chart, hist_chart)
 
 
-def weather_classification_model(visual_type="confusion_matrix", random_state=42):
+def weather_classification_model(visual_type="confusion_matrix", random_state=42, memory_efficient=False):
     """
     Weather Classification Model with XGBoost
     
@@ -746,10 +746,10 @@ def weather_classification_model(visual_type="confusion_matrix", random_state=42
     y_test_encoded = label_encoder.transform(y_test)
     
     direct_weights = {
-        'Clear': 1.0,
-        'Cloudy': 1.25,  
-        'Rain': 10.0,
-        'Snow': 500.0
+        'Clear': 1.5,
+        'Cloudy': 3.0, 
+        'Rain': 20.0,
+        'Snow': 325.0
     }
     
     class_weight_dict = {}
@@ -757,9 +757,9 @@ def weather_classification_model(visual_type="confusion_matrix", random_state=42
         class_weight_dict[i] = direct_weights[class_name]
     
     model = XGBClassifier(
-        n_estimators=100, 
+        n_estimators=300, 
         learning_rate=0.1, 
-        max_depth=6, 
+        max_depth=None, 
         random_state=random_state, 
         n_jobs=1, 
         eval_metric='mlogloss'
@@ -889,7 +889,7 @@ def weather_classification_model(visual_type="confusion_matrix", random_state=42
         
         city_perf_df = pd.DataFrame(city_performance)
         
-        us_states = alt.topo_feature(data.us_10m.url, 'states')
+        us_states = alt.topo_feature(vega_datasets.us_10m.url, 'states')
         base_map = (
             alt.Chart(us_states)
             .mark_geoshape(fill="#f0f0f0", stroke="black")
