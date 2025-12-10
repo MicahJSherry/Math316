@@ -757,7 +757,7 @@ def weather_classification_model(visual_type="confusion_matrix", random_state=42
         class_weight_dict[i] = direct_weights[class_name]
     
     model = XGBClassifier(
-        n_estimators=1000, 
+        n_estimators=100, 
         learning_rate=0.1, 
         max_depth=6, 
         random_state=random_state, 
