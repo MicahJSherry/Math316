@@ -285,32 +285,43 @@ tornado = get_tornado_data()
 generate_tornado_map(tornado)
 
 ```
+click points on the map to see the wind speeds for the week surrounding a tornado (Shift+ click to select multiple tornados to compare). <br />
+the catagories are based on the Enhanced Fujita (EF) Scale: EF0 (65-85 mph), EF1 (86-110 mph), EF2 (111-135 mph), EF3 (136-165 mph), EF4 (166-200 mph), and EF5 (>200 mph). Our data visualizations does not seem exactly match with what we would expect to see. We Suspect the reasons for this may include the following: Tornados are categorized by peak wind speed rather than average wind speed; The wind speed is the wind speed at the closest weather station and the distance between stations and tornados can vary greatly; Tornados radius can vary greatly.
 
 :::
 
 ---
 
-# ML Models
+# ML Model: International Airports Wind Vector Prediction
 
 ::: {.panel-tabset}
 
-## Pittsburgh Area Model
-the Goal of this model is to predict wind vectors at the following International Airports:
+## International Airports Area Model
 
-- Pittsburgh International Airport (PIT) – 40.4406, -79.9959
-- Los Angeles International Airport (LAX) – 33.9425, -118.4081
-- Miami International Airport (MIA) – 25.7959, -80.2870
-- Denver International Airport (DEN) – 39.8617, -104.6731
-- Chicago O’Hare International Airport (ORD) – 41.9742, -87.9073
-- Seattle-Tacoma International Airport (SEA) – 47.4502, -122.3088  
+:::{.columns}
 
-the features used to predict this are the locations and wind vectors associated with the 5 closest stations
+::: {.column width="95%"}
+The **Goal** of this model is to predict **wind vectors** (speed and direction) at the following International Airports:
 
-We got the following recorded the following metrics on the test set:
+* **Pittsburgh International Airport (PIT)** – 40.4406, -79.9959
+* **Los Angeles International Airport (LAX)** – 33.9425, -118.4081
+* **Miami International Airport (MIA)** – 25.7959, -80.2870
+* **Denver International Airport (DEN)** – 39.8617, -104.6731
+* **Chicago O’Hare International Airport (ORD)** – 41.9742, -87.9073
+* **Seattle-Tacoma International Airport (SEA)** – 47.4502, -122.3088
 
-- R²: 0.7408853538672449
-- RMSE: 5.428108009372506
+The **Features** used for prediction are the locations and wind vectors associated with the **5 closest stations** for each airport.
 
+We recorded the following **Metrics** on the test set:
+
+| Metric | Value |
+| :--- | :--- |
+| **R² (Coefficient of Determination)** | 0.7408853538672449 |
+| **RMSE (Root Mean Squared Error)** | 5.428108009372506 |
+
+The $R^2$ of $\mathbf{0.74}$ suggests that approximately 74.1% of the variance in the true wind vectors is explained by the model. The RMSE of $\mathbf{5.43}$ represents the average magnitude of the prediction error in $\frac{km}{h}$.
+:::
+::: {.column width="100%"}
 ```{python}
 #| echo: false
 from models import get_data, train_model, visualize_predictions
@@ -323,7 +334,9 @@ chart
 ```
 :::
 
----
+:::
+
+:::
 
 # Condition Code Classifier
 

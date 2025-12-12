@@ -710,7 +710,7 @@ def generate_tornado_map(tornado):
     hourly_wind = tornado[['tornado_number', 'time','time_delta', 'wspd',"magnitude",'lat','lon']].copy()
     hourly_wind = hourly_wind.rename(columns={'wspd': 'wind_speed'})
     hourly_wind['wind_speed'] = hourly_wind['wind_speed'] * 0.621371 # convert to mph    
-
+    y_scale = [0, hourly_wind['wind_speed'].max()+2]
     # --------------------------------
     # INTERACTIVE SELECTION
     # --------------------------------
@@ -747,7 +747,7 @@ def generate_tornado_map(tornado):
             axis=alt.Axis(labelExpr="floor(datum.value/24) + 'd ' + floor(datum.value%24) + 'h'"),
             scale=alt.Scale(domain=[-3*24, 3*24])
         ),
-        y=alt.Y('wind_speed:Q', title='Wind Speed (mph)'),
+        y=alt.Y('wind_speed:Q', title='Wind Speed (mph)', scale = alt.Scale(domain=y_scale)),
         color=alt.Color('magnitude:N'),
         detail='tornado_number:N',
         tooltip=['tornado_number:N', 'time:T', 'wind_speed:Q'],
@@ -827,8 +827,7 @@ def generate_cities_map(cities,wind_df):
     daily_avg['wind_speed'] = daily_avg['wind_speed'] * 0.621371 # convert to mph
     #print(daily_avg)
     #print(data)
-
-
+    y_scale = [0, daily_avg['wind_speed'].max()+2]
     brush = alt.selection_point(fields=['city'])
 
     # World map
@@ -855,7 +854,7 @@ def generate_cities_map(cities,wind_df):
     # Wind line chart filtered by selected cities
     wind_chart = alt.Chart(daily_avg).mark_line().encode(
         x=alt.X('day_of_year:Q',scale=alt.Scale(domain=[0,366])),
-        y=alt.Y('wind_speed:Q', title='Wind Speed (mph)'),
+        y=alt.Y('wind_speed:Q',scale=alt.Scale(domain=y_scale), title='Wind Speed (mph)'),
         color='city:N',
         tooltip=['city:N', 'day_of_year:Q', 'wind_speed:Q'],
         opacity= alt.value(0.6)
