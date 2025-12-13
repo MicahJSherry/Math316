@@ -431,7 +431,35 @@ from chart_loader import load_weather_chart
 
 # Load pre-rendered feature importance visualization
 feature_chart = load_weather_chart(visual_type="feature_importance")
-feature_chart
+
+# Resize the chart to make it smaller
+feature_chart_small = feature_chart.properties(width=400, height=400)
+
+feature_df = pd.DataFrame({
+    "line": [
+        "Top 5 Features:",
+            "- temp_trend: The rate and direction of temperature change over time",
+            "- mixing_ratio: The ratio of water vapor mass to dry air mass, expressed as grams of water vapor per kilogram of dry air",
+            "- temp_pres_ratio_lag1: The ratio of temperature to atmospheric pressure from 1 hour ago",
+            "- temp_lag1: The actual temperature reading from 1 hour ago",
+            "- temp_trend_lag1: The temperature trend (rate of change) from 1 hour ago"
+    ],
+    "y": [0, 1, 2, 3, 4, 5]
+})
+
+feature_text = (
+    alt.Chart(feature_df)
+    .mark_text(align="left", baseline="top", fontSize=13, color="#000000")
+    .encode(
+        text="line:N",
+        y=alt.Y("y:O", axis=None)
+    )
+    .properties(width=400, height=120)
+)
+
+# Display vertically
+feature_chart_small
+feature_text
 ```
 
 ## Test Cities

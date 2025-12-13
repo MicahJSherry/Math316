@@ -1412,13 +1412,61 @@ def create_complete_dashboard_std():
             color='shared'
         ).properties(width=width, height=height, title='Inversed Direction Vectors: Direction Wind is Traveling to (Magnitude = Speed)')
 
-    wind_vector_interactive = create_interactive_wind_vector_chart(wind_df_enhanced, width=600, height=600)
+    # Make charts smaller for horizontal layout
+    wind_vector_interactive = create_interactive_wind_vector_chart(wind_df_enhanced, width=350, height=350)
 
-    complete_dashboard_std = (
-        geographic_map_chart &
-        geographic_selector_chart &
-        std_chart &
-        wind_vector_interactive
-    ).resolve_scale(color='independent')
+    # Update chart sizes for horizontal layout
+    std_chart_small = alt.Chart(wind_df_enhanced).mark_circle(
+        size=40, stroke='white', strokeWidth=1
+    ).encode(
+        x=alt.X('avg_wind_speed_kmh:Q', title='Average Wind Speed (km/h)', scale=alt.Scale(domain=[0, 25])),
+        y=alt.Y('wind_speed_std_kmh:Q', title='Wind Speed Standard Deviation (km/h)', scale=alt.Scale(domain=[0, 12])),
+        color=alt.condition(
+            geo_selector,
+            alt.Color('region:N', title='Region', scale=alt.Scale(domain=regions, range=region_colors)),
+            alt.value('lightgray')
+        ),
+        opacity=alt.condition(
+            geo_selector,
+            alt.value(0.8),
+            alt.value(0.3)
+        ),
+        tooltip=[
+            alt.Tooltip('city_name:N', title='City'), alt.Tooltip('region:N', title='Region'),
+            alt.Tooltip('geographic_feature:N', title='Geographic Feature'),
+            alt.Tooltip('avg_wind_speed_kmh:Q', title='Avg Wind Speed (km/h)', format='.1f'),
+            alt.Tooltip('wind_speed_std_kmh:Q', title='Standard Deviation (km/h)', format='.1f')
+        ]
+    ).add_params(speed_brush).transform_filter(geographic_brush).properties(width=350, height=200, title="Average Wind Speed vs Standard Deviation")
+
+    geographic_map_chart_small = (geographic_background + geographic_foreground).add_params(geographic_brush).properties(
+        width=350, height=200, title='City Selector (Brush to Select)'
+    )
+
+    geographic_selector_chart_small = (
+        alt.Chart(wind_df_enhanced)
+        .mark_rect(height=40)
+        .encode(
+            x=alt.X('geographic_feature:N').sort(geo_features).title(None).axis(labelAngle=-15, labelPadding=10),
+            color=alt.condition(
+                geo_selector,
+                alt.Color('geographic_feature:N').scale(domain=geo_features, range=['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2']).legend(None),
+                alt.value('lightgray')
+            ),
+            opacity=alt.condition(geo_selector, alt.value(1.0), alt.value(0.4)),
+            stroke=alt.condition(geo_selector, alt.value('black'), alt.value('white')),
+            strokeWidth=alt.condition(geo_selector, alt.value(2), alt.value(1))
+        )
+        .add_params(geo_selector)
+        .transform_filter(speed_brush)
+        .properties(width=350, height=50, title='Sort by Geographic Feature')
+    )
+
+    # Create three-column horizontal layout: selectors | std chart | wind vector chart
+    selectors_column = geographic_map_chart_small & geographic_selector_chart_small
+    std_column = std_chart_small
+    wind_vector_column = wind_vector_interactive
+    
+    complete_dashboard_std = (selectors_column | std_column | wind_vector_column).resolve_scale(color='independent')
 
     return complete_dashboard_std
