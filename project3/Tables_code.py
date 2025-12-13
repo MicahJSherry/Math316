@@ -82,141 +82,127 @@ def wind_stats(city_name, lat, lon, start_year=2020, end_year=2024):
             'avg_wind_direction_deg': np.nan,
         }
     
-def create_wind_table():
+def create_wind_tables():
+
     def wind_stats_local(city_name, lat, lon, start_year=2020, end_year=2024):
         try:
-            point = Point(lat, lon)
-            start = datetime.datetime(start_year, 1, 1)
-            end = datetime.datetime(end_year, 12, 31)
-            data = Hourly(point, start, end).fetch()
+            data = Hourly(
+                Point(lat, lon),
+                datetime.datetime(start_year, 1, 1),
+                datetime.datetime(end_year, 12, 31),
+            ).fetch()
 
-            wind_speed_avg = data['wspd'].mean() if 'wspd' in data.columns else np.nan
+            wspd = data["wspd"].mean() if "wspd" in data else np.nan
+            wdir = data["wdir"].dropna() if "wdir" in data else []
 
-            if 'wdir' in data.columns:
-                wind_directions = data['wdir'].dropna()
-                if len(wind_directions) > 0:
-                    directions_rad = np.radians(wind_directions)
-                    sin_mean = np.mean(np.sin(directions_rad))
-                    cos_mean = np.mean(np.cos(directions_rad))
-                    wind_dir_avg = np.degrees(np.arctan2(sin_mean, cos_mean))
-                    if wind_dir_avg < 0:
-                        wind_dir_avg += 360
-                else:
-                    wind_dir_avg = np.nan
+            if len(wdir):
+                rad = np.radians(wdir)
+                wdir = (np.degrees(np.arctan2(np.sin(rad).mean(), np.cos(rad).mean())) + 360) % 360
             else:
-                wind_dir_avg = np.nan
+                wdir = np.nan
 
-            return {
-                'city_name': city_name,
-                'latitude': lat,
-                'longitude': lon,
-                'avg_wind_speed_kmh': wind_speed_avg,
-                'avg_wind_direction_deg': wind_dir_avg,
-            }
+            return dict(
+                city_name=city_name,
+                avg_wind_speed_kmh=wspd,
+                avg_wind_direction_deg=wdir,
+            )
         except Exception:
-            return {
-                'city_name': city_name,
-                'latitude': lat,
-                'longitude': lon,
-                'avg_wind_speed_kmh': np.nan,
-                'avg_wind_direction_deg': np.nan,
-            }
+            return dict(
+                city_name=city_name,
+                avg_wind_speed_kmh=np.nan,
+                avg_wind_direction_deg=np.nan,
+            )
 
+    # -------- Build master dataframe --------
     results = []
     for region, cities in cities_by_region.items():
-        for city_name, (lat, lon) in cities.items():
-            r = wind_stats_local(city_name, lat, lon)
-            r['region'] = region
+        for city, (lat, lon) in cities.items():
+            r = wind_stats_local(city, lat, lon)
+            r["region"] = region
             results.append(r)
 
-    wind_df_local = pd.DataFrame(results)
+    wind_df = pd.DataFrame(results)
 
-    def get_direction_color(direction_deg):
-        if pd.isna(direction_deg):
-            return "#ffffff"
-        direction = float(direction_deg) % 360
-        cardinals = {0: (0.2, 0.4, 0.9), 90: (0.9, 0.3, 0.3), 180: (0.9, 0.9, 0.2), 270: (0.3, 0.8, 0.3)}
-        cardinal_angles = [0, 90, 180, 270]
-        distances = []
-        for cardinal in cardinal_angles:
-            if cardinal == 0:
-                dist = min(direction, 360 - direction)
-            else:
-                dist = abs(direction - cardinal)
-            distances.append(dist)
-        min_distance = min(distances)
-        closest_cardinal = cardinal_angles[distances.index(min_distance)]
-        if min_distance == 45:
-            return "#ffffff"
-        max_distance = 45
-        intensity = 1.0 - (min_distance / max_distance)
-        min_intensity = 0.1
-        intensity = min_intensity + intensity * (1.0 - min_intensity)
-        cardinal_color = cardinals[closest_cardinal]
-        white = (1.0, 1.0, 1.0)
-        final_color = tuple(intensity * cardinal_color[i] + (1 - intensity) * white[i] for i in range(3))
-        r, g, b = [int(c * 255) for c in final_color]
-        return f"#{r:02x}{g:02x}{b:02x}"
+    wind_df["avg_wind_speed_kmh"] = wind_df["avg_wind_speed_kmh"].round(1)
+    wind_df["avg_wind_direction_deg"] = wind_df["avg_wind_direction_deg"].round(0)
 
-    # Prepare table data
-    table_data_sorted = wind_df_local[[
-        'city_name', 'region', 'avg_wind_speed_kmh', 'avg_wind_direction_deg'
-    ]].copy()
-    table_data_sorted['avg_wind_speed_kmh'] = table_data_sorted['avg_wind_speed_kmh'].round(1)
-    table_data_sorted['avg_wind_direction_deg'] = table_data_sorted['avg_wind_direction_deg'].round(0)
-    table_data_sorted = table_data_sorted.sort_values(['region', 'avg_wind_speed_kmh'], ascending=[True, False]).reset_index(drop=True)
-    table_data_sorted['dir_color'] = table_data_sorted['avg_wind_direction_deg'].apply(get_direction_color)
-
-    min_speed = table_data_sorted['avg_wind_speed_kmh'].min()
-    max_speed = table_data_sorted['avg_wind_speed_kmh'].max()
-
-    # Build the table
-    table = (
-        GT(table_data_sorted.drop(columns=['dir_color']))
-        .tab_header(
-            title=md("**Regional Wind Analysis by Wind Speed and Direction**"),
-            subtitle=md("20 Major Cities on 5-Year Hourly Averages (2020-2024)")
-        )
-        .cols_label(
-            city_name="City",
-            avg_wind_speed_kmh="Speed (km/h)",
-            avg_wind_direction_deg="Direction (°)",
-        )
-        .tab_spanner(
-            label="Wind Statistics",
-            columns=["avg_wind_speed_kmh", "avg_wind_direction_deg"]
-        )
-        .tab_stub(
-            rowname_col="city_name",
-            groupname_col="region",
-        )
-        .data_color(
-            columns=['avg_wind_speed_kmh'],
-            palette=["#f8f9fa", "#e9ecef", "#dee2e6", "#ced4da", "#adb5bd", "#6c757d"],
-            domain=[min_speed, max_speed],
-        )
+    wind_df = wind_df.sort_values(
+        ["region", "avg_wind_speed_kmh"], ascending=[True, False]
     )
 
-    for idx, row in table_data_sorted.iterrows():
-        table = table.tab_style(
-            style=style.fill(color=get_direction_color(row['avg_wind_direction_deg'])),
-            locations=loc.body(columns=['avg_wind_direction_deg'], rows=[idx])
+    globals()["wind_df"] = wind_df
+
+    # -------- Color helper --------
+    def get_direction_color(d):
+        if pd.isna(d):
+            return "#ffffff"
+        d %= 360
+        card = {0:(0.2,0.4,0.9),90:(0.9,0.3,0.3),180:(0.9,0.9,0.2),270:(0.3,0.8,0.3)}
+        angs = np.array([0,90,180,270])
+        dist = np.minimum(abs(angs-d), 360-abs(angs-d))
+        m = dist.min()
+        if m == 45:
+            return "#ffffff"
+        w = 0.1 + (1 - m/45) * 0.9
+        c = card[angs[dist.argmin()]]
+        rgb = tuple(int((w*c[i] + (1-w))*255) for i in range(3))
+        return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
+
+    # -------- Table builder --------
+    def build_table(df, title):
+        df = df.reset_index(drop=True)
+        table = (
+            GT(df)
+            .tab_header(
+                title=md(title),
+                subtitle=md("5-Year Hourly Averages (2020–2024)")
+            )
+            .cols_label(
+                city_name="City",
+                avg_wind_speed_kmh="Speed (km/h)",
+                avg_wind_direction_deg="Direction (°)"
+            )
+            .tab_stub(rowname_col="city_name", groupname_col="region")
+            .data_color(
+                columns=["avg_wind_speed_kmh"],
+                palette=["#f8f9fa", "#adb5bd", "#6c757d"],
+                domain=[wind_df["avg_wind_speed_kmh"].min(),
+                        wind_df["avg_wind_speed_kmh"].max()],
+            )
+            .cols_align(
+                align="center",
+                columns=["avg_wind_speed_kmh", "avg_wind_direction_deg"]
+            )
+            .tab_options(
+                table_font_size="20px",
+                data_row_padding="8px",
+                row_group_padding="9px",
+            )
         )
 
-    table = (
-        table
-        .cols_align(
-            align='center',
-            columns=['avg_wind_speed_kmh', 'avg_wind_direction_deg']
-        )
-        .tab_source_note(
-            source_note=md("**Data:** Meteostat | **Speed:** Stronger→Darker | **Direction:** 🔵**North** 🔴**East** 🟡**South** 🟢**West**  Closer to single direction→Darker color")
-        )
+        for i, row in df.reset_index(drop=True).iterrows():
+            table = table.tab_style(
+                style=style.fill(color=get_direction_color(row["avg_wind_direction_deg"])),
+                locations=loc.body(
+                    columns=["avg_wind_direction_deg"],
+                    rows=[i]
+                )
+            )
+
+        return table
+
+    # -------- Split into TWO tables --------
+    table_left = build_table(
+        wind_df[wind_df["region"].isin(["Midwest", "Northeast"])],
+        "**Midwest & Northeast Wind Analysis**"
     )
 
-    globals()['wind_df'] = wind_df_local
+    table_right = build_table(
+        wind_df[wind_df["region"].isin(["Southeast", "West"])],
+        "**Southeast & West Wind Analysis**"
+    )
 
-    return table
+    return table_left, table_right
 
 
 
@@ -273,7 +259,7 @@ def get_tornado_data():
                         int(row["Day"])
                     )
                 except Exception:
-                    #print(f"⚠️ Skipping tornado {tornado_num}: Invalid date")
+                    #print(f"Skipping tornado {tornado_num}: Invalid date")
                     continue
 
                 # Define ±3 days around event
@@ -302,10 +288,10 @@ def get_tornado_data():
                     all_data.append(data)
                 #else:
                     
-                    #print(f"⚠️ No wind data found for Tornado {tornado_num} ({state})")
+                    #print(f"No wind data found for Tornado {tornado_num} ({state})")
 
             except Exception as e:
-                #print(f"❌ Error fetching Tornado {tornado_num}: {e}")
+                #print(f"Error fetching Tornado {tornado_num}: {e}")
                 continue
 
         if not all_data:
@@ -710,7 +696,7 @@ def generate_tornado_map(tornado):
     hourly_wind = tornado[['tornado_number', 'time','time_delta', 'wspd',"magnitude",'lat','lon']].copy()
     hourly_wind = hourly_wind.rename(columns={'wspd': 'wind_speed'})
     hourly_wind['wind_speed'] = hourly_wind['wind_speed'] * 0.621371 # convert to mph    
-
+    y_scale = [0, hourly_wind['wind_speed'].max()+2]
     # --------------------------------
     # INTERACTIVE SELECTION
     # --------------------------------
@@ -747,7 +733,7 @@ def generate_tornado_map(tornado):
             axis=alt.Axis(labelExpr="floor(datum.value/24) + 'd ' + floor(datum.value%24) + 'h'"),
             scale=alt.Scale(domain=[-3*24, 3*24])
         ),
-        y=alt.Y('wind_speed:Q', title='Wind Speed (mph)'),
+        y=alt.Y('wind_speed:Q', title='Wind Speed (mph)', scale = alt.Scale(domain=y_scale)),
         color=alt.Color('magnitude:N'),
         detail='tornado_number:N',
         tooltip=['tornado_number:N', 'time:T', 'wind_speed:Q'],
@@ -827,8 +813,7 @@ def generate_cities_map(cities,wind_df):
     daily_avg['wind_speed'] = daily_avg['wind_speed'] * 0.621371 # convert to mph
     #print(daily_avg)
     #print(data)
-
-
+    y_scale = [0, daily_avg['wind_speed'].max()+2]
     brush = alt.selection_point(fields=['city'])
 
     # World map
@@ -855,7 +840,7 @@ def generate_cities_map(cities,wind_df):
     # Wind line chart filtered by selected cities
     wind_chart = alt.Chart(daily_avg).mark_line().encode(
         x=alt.X('day_of_year:Q',scale=alt.Scale(domain=[0,366])),
-        y=alt.Y('wind_speed:Q', title='Wind Speed (mph)'),
+        y=alt.Y('wind_speed:Q',scale=alt.Scale(domain=y_scale), title='Wind Speed (mph)'),
         color='city:N',
         tooltip=['city:N', 'day_of_year:Q', 'wind_speed:Q'],
         opacity= alt.value(0.6)
