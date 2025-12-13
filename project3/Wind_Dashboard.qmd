@@ -95,6 +95,11 @@ Exploring wind data using the Meteostat Python API:
 ::: {.panel-tabset}
 
 ## Aggregation Table
+
+::: {.columns}
+
+::: {.column width="80%"}
+
 ```{python}
 
 import pandas as pd
@@ -148,11 +153,20 @@ cities_by_region = {
     }
 }
 
-from Tables_code import create_wind_table
 
-table = create_wind_table()
-table
+from Tables_code import create_wind_tables
+left, right = create_wind_tables()
+left
 ```
+:::
+
+::: {.column width="80%"}
+```{python}
+right
+```
+:::
+
+:::
 
 ## Daily Wind Speed
 
@@ -176,7 +190,7 @@ findings_df = pd.DataFrame({
 
 findings_text = (
     alt.Chart(findings_df)
-    .mark_text(align="left", baseline="top", fontSize=13, color="#003366")
+    .mark_text(align="left", baseline="top", fontSize=13, color="#000000")
     .encode(
         text="line:N",
         y=alt.Y("y:O", axis=None)
@@ -185,7 +199,7 @@ findings_text = (
 )
 
 final_chart = alt.hconcat(base_chart, findings_text).configure_view(
-    stroke=None      # removes the border box cleanly
+    stroke=None
 )
 
 final_chart
@@ -199,8 +213,34 @@ final_chart
 from Tables_code import get_geo_feature_temperature, chart_geo_feature_temperature
 
 df = get_geo_feature_temperature()
-chart = chart_geo_feature_temperature(df)
-chart
+base_chart2 = chart_geo_feature_temperature(df)
+
+findings_df = pd.DataFrame({
+    "line": [
+        "Key Findings:",
+        "- Temperature changes by geographical features",
+            "- Deserts: Hottest",
+            "- Great Lakes: Coldest",
+            "- Volcanic Islands: Extremely Consistant"
+    ],
+    "y": [0, 1, 2, 3, 4]
+})
+
+findings_text = (
+    alt.Chart(findings_df)
+    .mark_text(align="left", baseline="top", fontSize=13, color="#000000")
+    .encode(
+        text="line:N",
+        y=alt.Y("y:O", axis=None)
+    )
+    .properties(width=10, height=100)
+)
+
+final_chart = alt.hconcat(base_chart2, findings_text).configure_view(
+    stroke=None
+)
+
+final_chart
 ```
 
 ## Wind By City Map
